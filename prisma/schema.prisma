@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(USER)
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  parentId    String?
+  parent      Category? @relation("CategoryParent", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryParent")
+  posts       Post[]
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  content     String     @db.Text
+  excerpt     String?
+  featuredImage String?
+  status      PostStatus @default(DRAFT)
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  tags        Tag[]
+  mediaFiles  MediaFile[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  publishedAt DateTime?
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String        @db.Text
+  shortDesc   String?
+  price       Decimal       @db.Decimal(10, 2)
+  salePrice   Decimal?      @db.Decimal(10, 2)
+  sku         String        @unique
+  stock       Int           @default(0)
+  status      ProductStatus @default(ACTIVE)
+  featuredImage String?
+  images      Json?
+  categoryId  String?
+  category    Category?     @relation(fields: [categoryId], references: [id])
+  tags        Tag[]
+  mediaFiles  MediaFile[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  posts     Post[]
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model MediaFile {
+  id        String    @id @default(cuid())
+  name      String
+  fileName  String
+  url       String
+  mimeType  String
+  size      Int
+  alt       String?
+  caption   String?
+  posts     Post[]
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+}
