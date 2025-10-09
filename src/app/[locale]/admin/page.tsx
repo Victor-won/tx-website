@@ -1,12 +1,13 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
+export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
 
 interface Stats {
-  users: number
-  posts: number
-  products: number
-  categories: number
+  users: number;
+  posts: number;
+  products: number;
+  categories: number;
 }
 
 export default function AdminDashboard() {
@@ -15,75 +16,76 @@ export default function AdminDashboard() {
     posts: 0,
     products: 0,
     categories: 0,
-  })
-  const [loading, setLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   const fetchStats = async () => {
     try {
-      const [usersRes, postsRes, productsRes, categoriesRes] = await Promise.all([
-        fetch('/api/admin/stats/users'),
-        fetch('/api/posts'),
-        fetch('/api/products'),
-        fetch('/api/categories'),
-      ])
+      const [usersRes, postsRes, productsRes, categoriesRes] =
+        await Promise.all([
+          fetch("/api/admin/stats/users"),
+          fetch("/api/posts"),
+          fetch("/api/products"),
+          fetch("/api/categories"),
+        ]);
 
       const [users, posts, products, categories] = await Promise.all([
         usersRes.ok ? usersRes.json() : { pagination: { total: 0 } },
         postsRes.ok ? postsRes.json() : { pagination: { total: 0 } },
         productsRes.ok ? productsRes.json() : { pagination: { total: 0 } },
         categoriesRes.ok ? categoriesRes.json() : { pagination: { total: 0 } },
-      ])
+      ]);
 
       setStats({
         users: users.pagination?.total || 0,
         posts: posts.pagination?.total || 0,
         products: products.pagination?.total || 0,
         categories: categories.pagination?.total || 0,
-      })
+      });
     } catch (error) {
-      console.error('获取统计数据失败:', error)
+      console.error("获取统计数据失败:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const statCards = [
     {
-      name: '用户总数',
+      name: "用户总数",
       value: stats.users,
-      icon: '👥',
-      color: 'bg-blue-500',
+      icon: "👥",
+      color: "bg-blue-500",
     },
     {
-      name: '文章总数',
+      name: "文章总数",
       value: stats.posts,
-      icon: '📝',
-      color: 'bg-green-500',
+      icon: "📝",
+      color: "bg-green-500",
     },
     {
-      name: '产品总数',
+      name: "产品总数",
       value: stats.products,
-      icon: '📦',
-      color: 'bg-yellow-500',
+      icon: "📦",
+      color: "bg-yellow-500",
     },
     {
-      name: '分类总数',
+      name: "分类总数",
       value: stats.categories,
-      icon: '📁',
-      color: 'bg-purple-500',
+      icon: "📁",
+      color: "bg-purple-500",
     },
-  ]
+  ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">加载中...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -98,11 +100,16 @@ export default function AdminDashboard() {
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {statCards.map((item) => (
-          <div key={item.name} className="bg-white overflow-hidden shadow rounded-lg">
+          <div
+            key={item.name}
+            className="bg-white overflow-hidden shadow rounded-lg"
+          >
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`w-8 h-8 ${item.color} rounded-md flex items-center justify-center text-white text-lg`}>
+                  <div
+                    className={`w-8 h-8 ${item.color} rounded-md flex items-center justify-center text-white text-lg`}
+                  >
                     {item.icon}
                   </div>
                 </div>
@@ -135,7 +142,9 @@ export default function AdminDashboard() {
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">📝</div>
-                <div className="text-sm font-medium text-gray-900">新建文章</div>
+                <div className="text-sm font-medium text-gray-900">
+                  新建文章
+                </div>
               </div>
             </a>
             <a
@@ -144,7 +153,9 @@ export default function AdminDashboard() {
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">📦</div>
-                <div className="text-sm font-medium text-gray-900">添加产品</div>
+                <div className="text-sm font-medium text-gray-900">
+                  添加产品
+                </div>
               </div>
             </a>
             <a
@@ -153,7 +164,9 @@ export default function AdminDashboard() {
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">📁</div>
-                <div className="text-sm font-medium text-gray-900">管理分类</div>
+                <div className="text-sm font-medium text-gray-900">
+                  管理分类
+                </div>
               </div>
             </a>
             <a
@@ -169,5 +182,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

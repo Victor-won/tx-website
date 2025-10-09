@@ -1,17 +1,17 @@
-import { prisma } from '../lib/prisma'
-import { CreatePost, UpdatePost } from '../types'
-import { PostStatus } from '@prisma/client'
+import { prisma } from "../lib/prisma";
+import { CreatePost, UpdatePost } from "../types";
+import { PostStatus } from "@prisma/client";
 
 export class PostService {
   static async getAll(params?: {
-    page?: number
-    limit?: number
-    search?: string
-    status?: string
-    categoryId?: string
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    categoryId?: string;
   }) {
-    const { page = 1, limit = 10, search, status, categoryId } = params || {}
-    const skip = (page - 1) * limit
+    const { page = 1, limit = 10, search, status, categoryId } = params || {};
+    const skip = (page - 1) * limit;
 
     const where = {
       ...(search && {
@@ -23,7 +23,7 @@ export class PostService {
       }),
       ...(status && { status: status as PostStatus }),
       ...(categoryId && { categoryId }),
-    }
+    };
 
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
@@ -38,10 +38,10 @@ export class PostService {
           tags: true,
           mediaFiles: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.post.count({ where }),
-    ])
+    ]);
 
     return {
       data: posts,
@@ -51,7 +51,7 @@ export class PostService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    }
+    };
   }
 
   static async getById(id: string) {
@@ -65,7 +65,7 @@ export class PostService {
         tags: true,
         mediaFiles: true,
       },
-    })
+    });
   }
 
   static async getBySlug(slug: string) {
@@ -79,19 +79,19 @@ export class PostService {
         tags: true,
         mediaFiles: true,
       },
-    })
+    });
   }
 
   static async create(data: CreatePost & { authorId: string }) {
-    const { tags, ...postData } = data
-    
+    const { tags, ...postData } = data;
+
     return prisma.post.create({
       data: {
         ...postData,
-        ...(data.status === 'PUBLISHED' && { publishedAt: new Date() }),
+        ...(data.status === "PUBLISHED" && { publishedAt: new Date() }),
         ...(tags && {
           tags: {
-            connectOrCreate: tags.map(tag => ({
+            connectOrCreate: tags.map((tag) => ({
               where: { slug: tag },
               create: { name: tag, slug: tag },
             })),
@@ -106,21 +106,21 @@ export class PostService {
         tags: true,
         mediaFiles: true,
       },
-    })
+    });
   }
 
   static async update(id: string, data: UpdatePost) {
-    const { tags, ...postData } = data
-    
+    const { tags, ...postData } = data;
+
     return prisma.post.update({
       where: { id },
       data: {
         ...postData,
-        ...(data.status === 'PUBLISHED' && { publishedAt: new Date() }),
+        ...(data.status === "PUBLISHED" && { publishedAt: new Date() }),
         ...(tags && {
           tags: {
             set: [],
-            connectOrCreate: tags.map(tag => ({
+            connectOrCreate: tags.map((tag) => ({
               where: { slug: tag },
               create: { name: tag, slug: tag },
             })),
@@ -135,12 +135,12 @@ export class PostService {
         tags: true,
         mediaFiles: true,
       },
-    })
+    });
   }
 
   static async delete(id: string) {
     return prisma.post.delete({
       where: { id },
-    })
+    });
   }
 }

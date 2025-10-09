@@ -22,36 +22,40 @@ model User {
 }
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String     @unique
   description String?
+  image       String?
   parentId    String?
-  parent      Category? @relation("CategoryParent", fields: [parentId], references: [id])
+  parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children    Category[] @relation("CategoryParent")
   posts       Post[]
   products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Post {
-  id          String     @id @default(cuid())
-  title       String
-  slug        String     @unique
-  content     String     @db.Text
-  excerpt     String?
+  id            String     @id @default(cuid())
+  title         String
+  titleEn       String?
+  slug          String     @unique
+  content       String     @db.Text
+  contentEn     String?    @db.Text
+  excerpt       String?    @db.Text
+  excerptEn     String?    @db.Text
   featuredImage String?
-  status      PostStatus @default(DRAFT)
-  authorId    String
-  author      User       @relation(fields: [authorId], references: [id])
-  categoryId  String?
-  category    Category?  @relation(fields: [categoryId], references: [id])
-  tags        Tag[]
-  mediaFiles  MediaFile[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  publishedAt DateTime?
+  status        PostStatus @default(DRAFT)
+  authorId      String
+  author        User       @relation(fields: [authorId], references: [id])
+  categoryId    String?
+  category      Category?  @relation(fields: [categoryId], references: [id])
+  tags          Tag[]
+  mediaFiles    MediaFile[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  publishedAt   DateTime?
 }
 
 model Product {

@@ -1,5 +1,6 @@
-'use client'
+"use client";
 
+export const dynamic = "force-dynamic";
 export default function MediaPage() {
   return (
     <div>
@@ -9,5 +10,5 @@ export default function MediaPage() {
         <div className="text-gray-500">媒体库功能开发中...</div>
       </div>
     </div>
-  )
+  );
 }

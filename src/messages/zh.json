@@ -1,0 +1,111 @@
+{
+  "nav": {
+    "home": "首页",
+    "products": "产品",
+    "posts": "文章",
+    "categories": "分类",
+    "admin": "管理后台",
+    "signin": "登录",
+    "signup": "注册",
+    "signout": "退出登录"
+  },
+  "home": {
+    "welcome": "欢迎，{name}",
+    "title": "欢迎来到 TX Website",
+    "subtitle": "现代化企业网站解决方案",
+    "productManagement": "产品管理",
+    "productDescription": "完整的产品CRUD",
+    "postManagement": "文章管理",
+    "postDescription": "内容发布系统",
+    "categoryManagement": "分类管理",
+    "categoryDescription": "层级分类系统",
+    "mediaLibrary": "媒体库",
+    "mediaDescription": "文件资源管理",
+    "viewApi": "查看 API →",
+    "apiEndpoints": "API 端点",
+    "copyright": "© 2024 TX Website. 基于 Next.js 15 + Prisma + TypeScript 构建。"
+  },
+  "api": {
+    "products": {
+      "title": "产品 API",
+      "list": "获取产品列表",
+      "create": "创建产品",
+      "get": "获取产品详情",
+      "update": "更新产品",
+      "delete": "删除产品"
+    },
+    "posts": {
+      "title": "文章 API",
+      "list": "获取文章列表",
+      "create": "创建文章",
+      "get": "获取文章详情",
+      "update": "更新文章",
+      "delete": "删除文章"
+    },
+    "categories": {
+      "title": "分类 API",
+      "list": "获取分类列表",
+      "create": "创建分类",
+      "get": "获取分类详情",
+      "update": "更新分类",
+      "delete": "删除分类"
+    },
+    "media": {
+      "title": "媒体库 API",
+      "list": "获取媒体文件列表",
+      "create": "上传媒体文件",
+      "get": "获取媒体文件详情",
+      "update": "更新媒体文件",
+      "delete": "删除媒体文件"
+    }
+  },
+  "metadata": {
+    "title": "企业网站 - TX Website",
+    "description": "现代化企业网站，包含产品展示、文章资讯等功能"
+  },
+  "auth": {
+    "signin": {
+      "title": "登录您的账户",
+      "description": "输入您的邮箱和密码以访问您的账户",
+      "email": "邮箱地址",
+      "emailPlaceholder": "请输入邮箱地址",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "submit": "登录",
+      "submitting": "登录中...",
+      "errorPrefix": "登录失败: ",
+      "unknownError": "登录状态未知，请重试",
+      "generalError": "登录失败，请重试",
+      "noAccount": "还没有账户？",
+      "signupLink": "立即注册",
+      "backToHome": "← 返回首页"
+    },
+    "signup": {
+      "title": "创建新账户",
+      "description": "填写下方信息来创建您的账户",
+      "name": "姓名",
+      "namePlaceholder": "请输入您的姓名",
+      "email": "邮箱地址",
+      "emailPlaceholder": "请输入邮箱地址",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码（至少6位）",
+      "confirmPassword": "确认密码",
+      "confirmPasswordPlaceholder": "请再次输入密码",
+      "passwordStrength": "密码强度：",
+      "strengthTooShort": "太短",
+      "strengthWeak": "较弱",
+      "strengthMedium": "一般",
+      "strengthStrong": "强",
+      "submit": "创建账户",
+      "submitting": "注册中...",
+      "errorPasswordMismatch": "密码确认不匹配",
+      "errorPasswordTooShort": "密码太短，至少需要6个字符",
+      "errorRegistrationFailed": "注册失败",
+      "errorSignupSuccess": "注册成功，但登录失败，请手动登录",
+      "errorGeneral": "注册失败，请重试",
+      "hasAccount": "已有账户？",
+      "signinLink": "立即登录",
+      "backToHome": "← 返回首页"
+    }
+  }
+}

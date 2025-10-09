@@ -1,59 +1,67 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Eye, EyeOff, LogIn } from 'lucide-react'
+export const dynamic = "force-dynamic";
+import { useState } from "react";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter, Link } from "@/routing";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 
 export default function SignIn() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
+  const t = useTranslations("auth.signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
-      })
+      });
 
-      console.log('SignIn result:', result) // 调试信息
+      console.log("SignIn result:", result); // 调试信息
 
       if (result?.error) {
-        console.error('SignIn error:', result.error) // 调试信息
-        setError(`登录失败: ${result.error}`)
+        console.error("SignIn error:", result.error); // 调试信息
+        setError(`${t("errorPrefix")}${result.error}`);
       } else if (result?.ok) {
-        const session = await getSession()
-        console.log('Session after login:', session) // 调试信息
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/admin')
+        const session = await getSession();
+        console.log("Session after login:", session); // 调试信息
+        if (session?.user?.role === "ADMIN") {
+          router.push("/admin");
         } else {
-          router.push('/')
+          router.push("/");
         }
       } else {
-        setError('登录状态未知，请重试')
+        setError(t("unknownError"));
       }
     } catch (error) {
-      console.error('Login catch error:', error) // 调试信息
-      setError('登录失败，请重试')
+      console.error("Login catch error:", error); // 调试信息
+      setError(t("generalError"));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
@@ -64,10 +72,10 @@ export default function SignIn() {
               <LogIn className="w-6 h-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight">
-              登录您的账户
+              {t("title")}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              输入您的邮箱和密码以访问您的账户
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -76,28 +84,28 @@ export default function SignIn() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">邮箱地址</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="请输入邮箱地址"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="h-11"
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="password">密码</Label>
+                <Label htmlFor="password">{t("password")}</Label>
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="请输入密码"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t("passwordPlaceholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -119,36 +127,39 @@ export default function SignIn() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-11 font-semibold"
                 disabled={loading}
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    登录中...
+                    {t("submitting")}
                   </div>
                 ) : (
-                  '登录'
+                  t("submit")
                 )}
               </Button>
             </form>
 
             <div className="text-center space-y-4">
               <div className="text-sm text-muted-foreground">
-                还没有账户？{' '}
-                <Link href="/auth/signup" className="text-primary hover:underline font-medium">
-                  立即注册
+                {t("noAccount")}{" "}
+                <Link
+                  href="/auth/signup"
+                  className="text-primary hover:underline font-medium"
+                >
+                  {t("signupLink")}
                 </Link>
               </div>
-              
+
               <div className="pt-4 border-t">
-                <Link 
-                  href="/" 
+                <Link
+                  href="/"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  ← 返回首页
+                  {t("backToHome")}
                 </Link>
               </div>
             </div>
@@ -156,5 +167,5 @@ export default function SignIn() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

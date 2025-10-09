@@ -1,0 +1,111 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "posts": "Posts",
+    "categories": "Categories",
+    "admin": "Admin",
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "signout": "Sign Out"
+  },
+  "home": {
+    "welcome": "Welcome, {name}",
+    "title": "Welcome to TX Website",
+    "subtitle": "Modern Enterprise Website Solution",
+    "productManagement": "Product Management",
+    "productDescription": "Complete Product CRUD",
+    "postManagement": "Post Management",
+    "postDescription": "Content Publishing System",
+    "categoryManagement": "Category Management",
+    "categoryDescription": "Hierarchical Category System",
+    "mediaLibrary": "Media Library",
+    "mediaDescription": "File Resource Management",
+    "viewApi": "View API →",
+    "apiEndpoints": "API Endpoints",
+    "copyright": "© 2024 TX Website. Built with Next.js 15 + Prisma + TypeScript."
+  },
+  "api": {
+    "products": {
+      "title": "Products API",
+      "list": "Get product list",
+      "create": "Create product",
+      "get": "Get product details",
+      "update": "Update product",
+      "delete": "Delete product"
+    },
+    "posts": {
+      "title": "Posts API",
+      "list": "Get post list",
+      "create": "Create post",
+      "get": "Get post details",
+      "update": "Update post",
+      "delete": "Delete post"
+    },
+    "categories": {
+      "title": "Categories API",
+      "list": "Get category list",
+      "create": "Create category",
+      "get": "Get category details",
+      "update": "Update category",
+      "delete": "Delete category"
+    },
+    "media": {
+      "title": "Media API",
+      "list": "Get media file list",
+      "create": "Upload media file",
+      "get": "Get media file details",
+      "update": "Update media file",
+      "delete": "Delete media file"
+    }
+  },
+  "metadata": {
+    "title": "Enterprise Website - TX Website",
+    "description": "Modern enterprise website with product showcase, article information and more"
+  },
+  "auth": {
+    "signin": {
+      "title": "Sign In to Your Account",
+      "description": "Enter your email and password to access your account",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "errorPrefix": "Sign in failed: ",
+      "unknownError": "Unknown sign in status, please try again",
+      "generalError": "Sign in failed, please try again",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up now",
+      "backToHome": "← Back to Home"
+    },
+    "signup": {
+      "title": "Create New Account",
+      "description": "Fill in the information below to create your account",
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (at least 6 characters)",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Enter password again",
+      "passwordStrength": "Password Strength: ",
+      "strengthTooShort": "Too Short",
+      "strengthWeak": "Weak",
+      "strengthMedium": "Medium",
+      "strengthStrong": "Strong",
+      "submit": "Create Account",
+      "submitting": "Signing up...",
+      "errorPasswordMismatch": "Passwords do not match",
+      "errorPasswordTooShort": "Password is too short, at least 6 characters required",
+      "errorRegistrationFailed": "Registration failed",
+      "errorSignupSuccess": "Registration successful but sign in failed, please sign in manually",
+      "errorGeneral": "Registration failed, please try again",
+      "hasAccount": "Already have an account?",
+      "signinLink": "Sign in now",
+      "backToHome": "← Back to Home"
+    }
+  }
+}

@@ -15,7 +15,20 @@
       "Bash(npm install:*)",
       "Bash(pnpm install:*)",
       "Bash(npx prisma:*)",
-      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma studio --port 5556)"
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma studio --port 5556)",
+      "Bash(tree:*)",
+      "Bash(for file in /Users/angck/tx-website/src/app/admin/*/page.tsx /Users/angck/tx-website/src/app/admin/page.tsx)",
+      "Bash(do)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(then)",
+      "Bash(if ! grep -q \"export const dynamic\" \"$file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(for file in /Users/angck/tx-website/src/app/auth/*/page.tsx)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma db execute --stdin)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

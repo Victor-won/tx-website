@@ -1,15 +1,15 @@
-import { prisma } from '../lib/prisma'
-import { CreateCategory, UpdateCategory } from '../types'
+import { prisma } from "../lib/prisma";
+import { CreateCategory, UpdateCategory } from "../types";
 
 export class CategoryService {
   static async getAll(params?: {
-    page?: number
-    limit?: number
-    search?: string
-    parentId?: string | null
+    page?: number;
+    limit?: number;
+    search?: string;
+    parentId?: string | null;
   }) {
-    const { page = 1, limit = 10, search, parentId } = params || {}
-    const skip = (page - 1) * limit
+    const { page = 1, limit = 10, search, parentId } = params || {};
+    const skip = (page - 1) * limit;
 
     const where = {
       ...(search && {
@@ -19,7 +19,7 @@ export class CategoryService {
         ],
       }),
       ...(parentId !== undefined && { parentId }),
-    }
+    };
 
     const [categories, total] = await Promise.all([
       prisma.category.findMany({
@@ -36,10 +36,10 @@ export class CategoryService {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.category.count({ where }),
-    ])
+    ]);
 
     return {
       data: categories,
@@ -49,7 +49,7 @@ export class CategoryService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    }
+    };
   }
 
   static async getById(id: string) {
@@ -61,7 +61,7 @@ export class CategoryService {
         posts: true,
         products: true,
       },
-    })
+    });
   }
 
   static async getBySlug(slug: string) {
@@ -73,7 +73,7 @@ export class CategoryService {
         posts: true,
         products: true,
       },
-    })
+    });
   }
 
   static async create(data: CreateCategory) {
@@ -83,7 +83,7 @@ export class CategoryService {
         parent: true,
         children: true,
       },
-    })
+    });
   }
 
   static async update(id: string, data: UpdateCategory) {
@@ -94,12 +94,12 @@ export class CategoryService {
         parent: true,
         children: true,
       },
-    })
+    });
   }
 
   static async delete(id: string) {
     return prisma.category.delete({
       where: { id },
-    })
+    });
   }
 }

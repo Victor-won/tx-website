@@ -1,30 +1,37 @@
-'use client'
+"use client";
 
-import { signOut, useSession } from 'next-auth/react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const navigation = [
-  { name: '仪表板', href: '/admin', icon: '📊' },
-  { name: '用户管理', href: '/admin/users', icon: '👥' },
-  { name: '分类管理', href: '/admin/categories', icon: '📁' },
-  { name: '文章管理', href: '/admin/posts', icon: '📝' },
-  { name: '产品管理', href: '/admin/products', icon: '📦' },
-  { name: '媒体库', href: '/admin/media', icon: '🖼️' },
-]
+  { name: "仪表板", href: "/admin", icon: "📊" },
+  { name: "用户管理", href: "/admin/users", icon: "👥" },
+  { name: "分类管理", href: "/admin/categories", icon: "📁" },
+  { name: "文章管理", href: "/admin/posts", icon: "📝" },
+  { name: "产品管理", href: "/admin/products", icon: "📦" },
+  { name: "媒体库", href: "/admin/media", icon: "🖼️" },
+];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession()
-  const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* 移动端侧边栏 */}
       {sidebarOpen && (
         <div className="fixed inset-0 flex z-40 md:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+          <div
+            className="fixed inset-0 bg-gray-600 bg-opacity-75"
+            onClick={() => setSidebarOpen(false)}
+          />
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
@@ -92,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </main>
       </div>
     </div>
-  )
+  );
 }
 
 function SidebarContent({ pathname }: { pathname: string }) {
@@ -104,21 +111,21 @@ function SidebarContent({ pathname }: { pathname: string }) {
       <div className="flex-1 flex flex-col overflow-y-auto">
         <nav className="flex-1 px-2 py-4 bg-white space-y-1">
           {navigation.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={`${
                   isActive
-                    ? 'bg-blue-100 border-blue-500 text-blue-700'
-                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? "bg-blue-100 border-blue-500 text-blue-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 } group flex items-center px-2 py-2 text-sm font-medium border-l-4`}
               >
                 <span className="mr-3 text-lg">{item.icon}</span>
                 {item.name}
               </Link>
-            )
+            );
           })}
         </nav>
         <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
@@ -128,5 +135,5 @@ function SidebarContent({ pathname }: { pathname: string }) {
         </div>
       </div>
     </>
-  )
+  );
 }
