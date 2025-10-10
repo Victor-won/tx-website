@@ -49,6 +49,7 @@ export const config = {
   matcher: [
     "/",
     "/(zh|en)/:path*",
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    // 排除 api、_next、静态资源文件
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|png|gif|webp|svg|ico|mp4|webm)).*)",
   ],
 };
