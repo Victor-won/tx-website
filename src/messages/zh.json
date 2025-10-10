@@ -1,13 +1,17 @@
 {
   "nav": {
     "home": "首页",
-    "products": "产品",
+    "products": "产品中心",
+    "projectCollaboration": "项目合作",
+    "solutions": "解决方案",
     "posts": "文章",
     "categories": "分类",
     "admin": "管理后台",
     "signin": "登录",
     "signup": "注册",
-    "signout": "退出登录"
+    "signout": "退出登录",
+    "contact": "联系我们",
+    "about": "关于我们"
   },
   "home": {
     "welcome": "欢迎，{name}",
@@ -106,6 +110,29 @@
       "hasAccount": "已有账户？",
       "signinLink": "立即登录",
       "backToHome": "← 返回首页"
+    }
+  },
+  "hero": {
+    "slide1": {
+      "highlight": "专业制造",
+      "title": "通信设备产品制造商",
+      "description": "提供全方位的通信解决方案",
+      "button1": "了解更多",
+      "button2": "观看案例"
+    },
+    "slide2": {
+      "highlight": "定制方案",
+      "title": "专业的通信系统方案提供商",
+      "description": "为各行业定制通信系统方案",
+      "button1": "了解更多",
+      "button2": "观看案例"
+    },
+    "slide3": {
+      "highlight": "创新开发",
+      "title": "领先的通信软件应用开发商",
+      "description": "创新通信软件应用开发",
+      "button1": "了解更多",
+      "button2": "观看案例"
     }
   }
 }

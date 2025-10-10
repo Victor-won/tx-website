@@ -20,8 +20,10 @@ export const dynamic = "force-dynamic";
 interface Category {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   description: string | null;
+  descriptionEn: string | null;
   image: string | null;
   parentId: string | null;
   parent?: {
@@ -39,8 +41,10 @@ interface Category {
 
 interface CategoryFormData {
   name: string;
+  nameEn: string;
   slug: string;
   description: string;
+  descriptionEn: string;
   image: string;
   parentId: string;
 }
@@ -61,12 +65,15 @@ export default function CategoriesPage() {
   );
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
+    nameEn: "",
     slug: "",
     description: "",
+    descriptionEn: "",
     image: "",
     parentId: "",
   });
   const [formLoading, setFormLoading] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -114,6 +121,56 @@ export default function CategoriesPage() {
     setCurrentPage(1);
   };
 
+  const handleAutoTranslate = async () => {
+    setTranslating(true);
+    try {
+      const promises = [];
+
+      // 翻译名称
+      if (formData.name && !formData.nameEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: formData.name, targetLang: "en" }),
+          }).then((res) => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      // 翻译描述
+      if (formData.description && !formData.descriptionEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.description,
+              targetLang: "en",
+            }),
+          }).then((res) => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      const [nameResult, descriptionResult] = await Promise.all(promises);
+
+      setFormData((prev) => ({
+        ...prev,
+        nameEn: nameResult?.data?.translatedText || prev.nameEn,
+        descriptionEn:
+          descriptionResult?.data?.translatedText || prev.descriptionEn,
+      }));
+    } catch (error) {
+      console.error("翻译失败:", error);
+      alert("翻译失败，请重试");
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormLoading(true);
@@ -121,8 +178,10 @@ export default function CategoriesPage() {
     try {
       const payload = {
         name: formData.name,
+        nameEn: formData.nameEn || undefined,
         slug: formData.slug,
         description: formData.description || undefined,
+        descriptionEn: formData.descriptionEn || undefined,
         image: formData.image || undefined,
         parentId: formData.parentId || null,
       };
@@ -141,8 +200,10 @@ export default function CategoriesPage() {
         setIsCreateDialogOpen(false);
         setFormData({
           name: "",
+          nameEn: "",
           slug: "",
           description: "",
+          descriptionEn: "",
           image: "",
           parentId: "",
         });
@@ -168,8 +229,10 @@ export default function CategoriesPage() {
     try {
       const payload = {
         name: formData.name,
+        nameEn: formData.nameEn || undefined,
         slug: formData.slug,
         description: formData.description || undefined,
+        descriptionEn: formData.descriptionEn || undefined,
         image: formData.image || undefined,
         parentId: formData.parentId || null,
       };
@@ -189,8 +252,10 @@ export default function CategoriesPage() {
         setSelectedCategory(null);
         setFormData({
           name: "",
+          nameEn: "",
           slug: "",
           description: "",
+          descriptionEn: "",
           image: "",
           parentId: "",
         });
@@ -239,8 +304,10 @@ export default function CategoriesPage() {
     setSelectedCategory(category);
     setFormData({
       name: category.name,
+      nameEn: category.nameEn || "",
       slug: category.slug,
       description: category.description || "",
+      descriptionEn: category.descriptionEn || "",
       image: category.image || "",
       parentId: category.parentId || "",
     });
@@ -279,15 +346,26 @@ export default function CategoriesPage() {
           <DialogTrigger asChild>
             <Button>+ 新建分类</Button>
           </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreateCategory}>
-              <DialogHeader>
-                <DialogTitle>创建分类</DialogTitle>
-                <DialogDescription>填写以下信息创建新分类</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>创建分类</DialogTitle>
+              <DialogDescription>填写以下信息创建新分类</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateCategory} className="flex flex-col flex-1 overflow-hidden">
+              <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
+                <div className="flex justify-end mb-2">
+                  <Button
+                    type="button"
+                    onClick={handleAutoTranslate}
+                    disabled={translating || formLoading}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    size="sm"
+                  >
+                    {translating ? "翻译中..." : "🌐 自动翻译为英文"}
+                  </Button>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="create-name">分类名称 *</Label>
+                  <Label htmlFor="create-name">分类名称 (中文) *</Label>
                   <Input
                     id="create-name"
                     value={formData.name}
@@ -303,6 +381,17 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="create-name-en">分类名称 (英文)</Label>
+                  <Input
+                    id="create-name-en"
+                    value={formData.nameEn}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nameEn: e.target.value })
+                    }
+                    placeholder="Category Name (English)"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="create-slug">Slug *</Label>
                   <Input
                     id="create-slug"
@@ -314,7 +403,7 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="create-description">描述</Label>
+                  <Label htmlFor="create-description">描述 (中文)</Label>
                   <textarea
                     id="create-description"
                     value={formData.description}
@@ -323,6 +412,18 @@ export default function CategoriesPage() {
                     }
                     className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[80px]"
                     placeholder="分类描述..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="create-description-en">描述 (英文)</Label>
+                  <textarea
+                    id="create-description-en"
+                    value={formData.descriptionEn}
+                    onChange={(e) =>
+                      setFormData({ ...formData, descriptionEn: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[80px]"
+                    placeholder="Category Description (English)..."
                   />
                 </div>
                 <div className="space-y-2">
@@ -359,8 +460,10 @@ export default function CategoriesPage() {
                     setIsCreateDialogOpen(false);
                     setFormData({
                       name: "",
+                      nameEn: "",
                       slug: "",
                       description: "",
+                      descriptionEn: "",
                       image: "",
                       parentId: "",
                     });
@@ -492,15 +595,26 @@ export default function CategoriesPage() {
 
       {/* 编辑对话框 */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <form onSubmit={handleEditCategory}>
-            <DialogHeader>
-              <DialogTitle>编辑分类</DialogTitle>
-              <DialogDescription>修改分类信息</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>编辑分类</DialogTitle>
+            <DialogDescription>修改分类信息</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditCategory} className="flex flex-col flex-1 overflow-hidden">
+            <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
+              <div className="flex justify-end mb-2">
+                <Button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={translating || formLoading}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  size="sm"
+                >
+                  {translating ? "翻译中..." : "🌐 自动翻译为英文"}
+                </Button>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-name">分类名称 *</Label>
+                <Label htmlFor="edit-name">分类名称 (中文) *</Label>
                 <Input
                   id="edit-name"
                   value={formData.name}
@@ -516,6 +630,17 @@ export default function CategoriesPage() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="edit-name-en">分类名称 (英文)</Label>
+                <Input
+                  id="edit-name-en"
+                  value={formData.nameEn}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nameEn: e.target.value })
+                  }
+                  placeholder="Category Name (English)"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="edit-slug">Slug *</Label>
                 <Input
                   id="edit-slug"
@@ -527,7 +652,7 @@ export default function CategoriesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-description">描述</Label>
+                <Label htmlFor="edit-description">描述 (中文)</Label>
                 <textarea
                   id="edit-description"
                   value={formData.description}
@@ -536,6 +661,18 @@ export default function CategoriesPage() {
                   }
                   className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[80px]"
                   placeholder="分类描述..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description-en">描述 (英文)</Label>
+                <textarea
+                  id="edit-description-en"
+                  value={formData.descriptionEn}
+                  onChange={(e) =>
+                    setFormData({ ...formData, descriptionEn: e.target.value })
+                  }
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[80px]"
+                  placeholder="Category Description (English)..."
                 />
               </div>
               <div className="space-y-2">
@@ -575,8 +712,10 @@ export default function CategoriesPage() {
                   setSelectedCategory(null);
                   setFormData({
                     name: "",
+                    nameEn: "",
                     slug: "",
                     description: "",
+                    descriptionEn: "",
                     image: "",
                     parentId: "",
                   });

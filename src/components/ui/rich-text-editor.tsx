@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface RichTextEditorProps {
   value: string;
@@ -18,6 +18,9 @@ export function RichTextEditor({
   onChange,
   placeholder = "开始输入内容...",
 }: RichTextEditorProps) {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -59,7 +62,65 @@ export function RichTextEditor({
     return null;
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      alert("仅支持图片格式 (JPEG, PNG, GIF, WebP)");
+      return;
+    }
+
+    // 验证文件大小 (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert("文件大小不能超过 5MB");
+      return;
+    }
+
+    // 上传文件
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload/image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        editor.chain().focus().setImage({ src: data.data.url }).run();
+      } else {
+        alert(data.error || "上传失败");
+      }
+    } catch (error) {
+      console.error("上传失败:", error);
+      alert("上传失败");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const addImage = () => {
+    // 触发文件选择
+    fileInputRef.current?.click();
+  };
+
+  const addImageByUrl = () => {
     const url = window.prompt("输入图片URL:");
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
@@ -75,8 +136,23 @@ export function RichTextEditor({
 
   return (
     <div className="border rounded-lg overflow-hidden">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       {/* Toolbar */}
       <div className="bg-gray-50 border-b p-2 flex flex-wrap gap-1">
+        {uploading && (
+          <div className="w-full mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700 flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            上传图片中...
+          </div>
+        )}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -196,13 +272,29 @@ export function RichTextEditor({
         >
           🔗
         </button>
+        <div className="relative inline-block">
+          <button
+            type="button"
+            onClick={addImage}
+            disabled={uploading}
+            className={`px-3 py-1 rounded hover:bg-gray-200 ${
+              uploading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            title="上传图片"
+          >
+            🖼️ 上传
+          </button>
+        </div>
         <button
           type="button"
-          onClick={addImage}
-          className="px-3 py-1 rounded hover:bg-gray-200"
-          title="图片"
+          onClick={addImageByUrl}
+          disabled={uploading}
+          className={`px-3 py-1 rounded hover:bg-gray-200 ${
+            uploading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          title="图片URL"
         >
-          🖼️
+          🔗 URL
         </button>
         <div className="w-px bg-gray-300 mx-1" />
         <button

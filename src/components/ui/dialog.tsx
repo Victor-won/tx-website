@@ -117,14 +117,14 @@ export function DialogContent({ children, className }: DialogContentProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div
         className="fixed inset-0 bg-black/50"
         onClick={() => onOpenChange(false)}
       />
       <div
         className={cn(
-          "relative bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6",
+          "relative bg-white rounded-lg shadow-lg w-full max-h-[90vh] flex flex-col my-8",
           className,
         )}
       >
@@ -143,7 +143,7 @@ export function DialogHeader({ children, className }: DialogHeaderProps) {
   return (
     <div
       className={cn(
-        "flex flex-col space-y-1.5 text-center sm:text-left mb-4",
+        "flex flex-col space-y-1.5 text-center sm:text-left px-6 pt-6 pb-4 border-b flex-shrink-0",
         className,
       )}
     >
@@ -191,7 +191,7 @@ export function DialogFooter({ children, className }: DialogFooterProps) {
   return (
     <div
       className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-4",
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 px-6 py-4 border-t bg-gray-50 flex-shrink-0",
         className,
       )}
     >

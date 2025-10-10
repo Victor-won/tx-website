@@ -7,6 +7,24 @@ import { CreatePostSchema } from "../../../../types";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const slug = searchParams.get("slug");
+
+    // If slug is provided, get single post by slug
+    if (slug) {
+      const post = await PostService.getBySlug(slug);
+      if (!post) {
+        return NextResponse.json(
+          { success: false, error: "文章不存在" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        data: [post], // Return as array for consistency
+      });
+    }
+
+    // Otherwise, get list of posts
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || undefined;

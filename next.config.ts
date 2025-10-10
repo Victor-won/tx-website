@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],
   // 配置动态路由
   experimental: {
-    after: true,
+    // after: true,
   },
 };
 

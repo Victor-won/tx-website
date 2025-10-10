@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import { Button } from "./button";
 
 interface ImageUploadProps {
@@ -13,6 +13,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uniqueId = useId();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,7 +94,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         accept="image/*"
         onChange={handleFileChange}
         className="hidden"
-        id="image-upload"
+        id={uniqueId}
       />
 
       {preview ? (
@@ -123,7 +124,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         </div>
       ) : (
         <label
-          htmlFor="image-upload"
+          htmlFor={uniqueId}
           className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-gray-400 bg-gray-50"
         >
           {uploading ? (

@@ -24,8 +24,10 @@ model User {
 model Category {
   id          String     @id @default(cuid())
   name        String
+  nameEn      String?
   slug        String     @unique
   description String?
+  descriptionEn String?
   image       String?
   parentId    String?
   parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -59,24 +61,29 @@ model Post {
 }
 
 model Product {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  description String        @db.Text
-  shortDesc   String?
-  price       Decimal       @db.Decimal(10, 2)
-  salePrice   Decimal?      @db.Decimal(10, 2)
-  sku         String        @unique
-  stock       Int           @default(0)
-  status      ProductStatus @default(ACTIVE)
+  id            String        @id @default(cuid())
+  name          String
+  nameEn        String?
+  slug          String        @unique
+  description   String        @db.Text
+  descriptionEn String?       @db.Text
+  shortDesc     String?       @db.Text
+  shortDescEn   String?       @db.Text
+  specifications Json?
+  features      Json?
+  price         Decimal       @db.Decimal(10, 2)
+  salePrice     Decimal?      @db.Decimal(10, 2)
+  sku           String        @unique
+  stock         Int           @default(0)
+  status        ProductStatus @default(ACTIVE)
   featuredImage String?
-  images      Json?
-  categoryId  String?
-  category    Category?     @relation(fields: [categoryId], references: [id])
-  tags        Tag[]
-  mediaFiles  MediaFile[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  images        Json?
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  tags          Tag[]
+  mediaFiles    MediaFile[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Tag {

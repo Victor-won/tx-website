@@ -2,12 +2,16 @@
   "nav": {
     "home": "Home",
     "products": "Products",
+    "projectCollaboration": "Project Collaboration",
+    "solutions": "Solutions",
     "posts": "Posts",
     "categories": "Categories",
     "admin": "Admin",
     "signin": "Sign In",
     "signup": "Sign Up",
-    "signout": "Sign Out"
+    "signout": "Sign Out",
+    "contact": "Contact Us",
+    "about": "About Us"
   },
   "home": {
     "welcome": "Welcome, {name}",
@@ -106,6 +110,29 @@
       "hasAccount": "Already have an account?",
       "signinLink": "Sign in now",
       "backToHome": "← Back to Home"
+    }
+  },
+  "hero": {
+    "slide1": {
+      "highlight": "Professional Manufacturing",
+      "title": "Communication Equipment Manufacturer",
+      "description": "Providing comprehensive communication solutions",
+      "button1": "Learn More",
+      "button2": "View Cases"
+    },
+    "slide2": {
+      "highlight": "Custom Solutions",
+      "title": "Professional Communication System Solutions Provider",
+      "description": "Customized communication system solutions for various industries",
+      "button1": "Learn More",
+      "button2": "View Cases"
+    },
+    "slide3": {
+      "highlight": "Innovation Development",
+      "title": "Leading Communication Software Application Developer",
+      "description": "Innovative communication software application development",
+      "button1": "Learn More",
+      "button2": "View Cases"
     }
   }
 }

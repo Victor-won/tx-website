@@ -94,6 +94,7 @@ export default function PostsPage() {
     categoryId: "",
   });
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -315,6 +316,74 @@ export default function PostsPage() {
     );
   };
 
+  const handleAutoTranslate = async () => {
+    if (!formData.title && !formData.content && !formData.excerpt) {
+      alert("请先填写中文内容");
+      return;
+    }
+
+    setTranslating(true);
+
+    try {
+      const promises = [];
+
+      // 翻译标题
+      if (formData.title && !formData.titleEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: formData.title, targetLang: "en" }),
+          }).then(res => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      // 翻译摘要
+      if (formData.excerpt && !formData.excerptEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: formData.excerpt, targetLang: "en" }),
+          }).then(res => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      // 翻译内容
+      if (formData.content && !formData.contentEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: formData.content, targetLang: "en" }),
+          }).then(res => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      const [titleResult, excerptResult, contentResult] = await Promise.all(promises);
+
+      setFormData((prev) => ({
+        ...prev,
+        titleEn: titleResult?.data?.translatedText || prev.titleEn,
+        excerptEn: excerptResult?.data?.translatedText || prev.excerptEn,
+        contentEn: contentResult?.data?.translatedText || prev.contentEn,
+      }));
+
+      alert("翻译完成！");
+    } catch (error) {
+      console.error("翻译失败:", error);
+      alert("翻译失败，请稍后重试");
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -383,11 +452,11 @@ export default function PostsPage() {
               新建文章
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>新建文章</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -468,6 +537,26 @@ export default function PostsPage() {
                     }
                   />
                 </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={translating}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {translating ? (
+                    <>
+                      <span className="animate-spin">⟳</span>
+                      翻译中...
+                    </>
+                  ) : (
+                    <>
+                      🌐 自动翻译为英文
+                    </>
+                  )}
+                </button>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -704,11 +793,11 @@ export default function PostsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>编辑文章</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -789,6 +878,26 @@ export default function PostsPage() {
                   }
                 />
               </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleAutoTranslate}
+                disabled={translating}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {translating ? (
+                  <>
+                    <span className="animate-spin">⟳</span>
+                    翻译中...
+                  </>
+                ) : (
+                  <>
+                    🌐 自动翻译为英文
+                  </>
+                )}
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
