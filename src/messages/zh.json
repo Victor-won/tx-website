@@ -117,22 +117,19 @@
       "highlight": "专业制造",
       "title": "通信设备产品制造商",
       "description": "提供全方位的通信解决方案",
-      "button1": "了解更多",
-      "button2": "观看案例"
+      "button1": "了解更多"
     },
     "slide2": {
       "highlight": "定制方案",
       "title": "专业的通信系统方案提供商",
       "description": "为各行业定制通信系统方案",
-      "button1": "了解更多",
-      "button2": "观看案例"
+      "button1": "了解更多"
     },
     "slide3": {
       "highlight": "创新开发",
       "title": "领先的通信软件应用开发商",
       "description": "创新通信软件应用开发",
-      "button1": "了解更多",
-      "button2": "观看案例"
+      "button1": "了解更多"
     }
   }
 }

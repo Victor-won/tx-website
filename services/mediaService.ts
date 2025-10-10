@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { CreateMediaFile, UpdateMediaFile } from "../types";
+import { deleteFile } from "../lib/upload";
 
 export class MediaService {
   static async getAll(params?: {
@@ -7,8 +8,10 @@ export class MediaService {
     limit?: number;
     search?: string;
     mimeType?: string;
+    folder?: string;
+    fileType?: string;
   }) {
-    const { page = 1, limit = 10, search, mimeType } = params || {};
+    const { page = 1, limit = 10, search, mimeType, folder, fileType } = params || {};
     const skip = (page - 1) * limit;
 
     const where = {
@@ -21,6 +24,8 @@ export class MediaService {
         ],
       }),
       ...(mimeType && { mimeType: { startsWith: mimeType } }),
+      ...(folder && { folder }),
+      ...(fileType && { fileType }),
     };
 
     const [mediaFiles, total] = await Promise.all([
@@ -96,8 +101,57 @@ export class MediaService {
   }
 
   static async delete(id: string) {
+    // 获取文件信息以删除物理文件
+    const mediaFile = await prisma.mediaFile.findUnique({
+      where: { id },
+      select: { path: true },
+    });
+
+    if (mediaFile?.path) {
+      try {
+        await deleteFile(mediaFile.path);
+      } catch (error) {
+        console.error("删除物理文件失败:", error);
+        // 继续删除数据库记录
+      }
+    }
+
     return prisma.mediaFile.delete({
       where: { id },
     });
+  }
+
+  static async batchDelete(ids: string[]) {
+    // 获取所有文件路径
+    const mediaFiles = await prisma.mediaFile.findMany({
+      where: { id: { in: ids } },
+      select: { path: true },
+    });
+
+    // 删除物理文件
+    const deletionPromises = mediaFiles
+      .filter((f) => f.path)
+      .map((f) =>
+        deleteFile(f.path).catch((error) =>
+          console.error(`删除文件 ${f.path} 失败:`, error),
+        ),
+      );
+
+    await Promise.all(deletionPromises);
+
+    // 删除数据库记录
+    return prisma.mediaFile.deleteMany({
+      where: { id: { in: ids } },
+    });
+  }
+
+  static async getFolders() {
+    const folders = await prisma.mediaFile.findMany({
+      where: { folder: { not: null } },
+      select: { folder: true },
+      distinct: ["folder"],
+    });
+
+    return folders.map((f) => f.folder).filter(Boolean);
   }
 }

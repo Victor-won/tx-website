@@ -97,18 +97,30 @@ model Tag {
 }
 
 model MediaFile {
-  id        String    @id @default(cuid())
+  id        String         @id @default(cuid())
   name      String
   fileName  String
   url       String
+  path      String         // 文件存储路径
   mimeType  String
   size      Int
+  width     Int?           // 图片宽度
+  height    Int?           // 图片高度
   alt       String?
   caption   String?
+  folder    String?        // 文件夹分类
+  fileType  MediaFileType  @default(OTHER) // 文件类型
+  uploadedBy String?       // 上传者ID
+  isPublic  Boolean        @default(true)  // 是否公开
   posts     Post[]
   products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([folder])
+  @@index([fileType])
+  @@index([mimeType])
+  @@index([createdAt])
 }
 
 enum Role {
@@ -126,4 +138,13 @@ enum ProductStatus {
   ACTIVE
   INACTIVE
   OUT_OF_STOCK
+}
+
+enum MediaFileType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  ARCHIVE
+  OTHER
 }

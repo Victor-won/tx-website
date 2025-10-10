@@ -6,15 +6,19 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+    const limit = parseInt(searchParams.get("limit") || "20");
     const search = searchParams.get("search") || undefined;
     const mimeType = searchParams.get("mimeType") || undefined;
+    const folder = searchParams.get("folder") || undefined;
+    const fileType = searchParams.get("fileType") || undefined;
 
     const result = await MediaService.getAll({
       page,
       limit,
       search,
       mimeType,
+      folder,
+      fileType,
     });
 
     return NextResponse.json({
