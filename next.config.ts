@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // after: true,
   },
+  // Disable React Strict Mode to suppress warnings from swagger-ui-react
+  reactStrictMode: false,
 };
 
 export default withNextIntl(nextConfig);

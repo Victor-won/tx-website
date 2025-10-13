@@ -2,6 +2,47 @@ import { NextRequest, NextResponse } from "next/server";
 import { MediaService } from "../../../../../services/mediaService";
 import { UpdateMediaFileSchema } from "../../../../../types";
 
+/**
+ * @swagger
+ * /api/media/{id}:
+ *   get:
+ *     summary: Get media file by ID
+ *     description: Retrieve a single media file by its ID
+ *     tags:
+ *       - Media
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Media file ID
+ *     responses:
+ *       200:
+ *         description: Media file retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *       404:
+ *         description: Media file not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -30,6 +71,63 @@ export async function GET(
   }
 }
 
+/**
+ * @swagger
+ * /api/media/{id}:
+ *   put:
+ *     summary: Update media file
+ *     description: Update an existing media file record
+ *     tags:
+ *       - Media
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Media file ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               alt:
+ *                 type: string
+ *               caption:
+ *                 type: string
+ *               folder:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Media file updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *                   example: 媒体文件更新成功
+ *       404:
+ *         description: Media file not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -66,6 +164,48 @@ export async function PUT(
   }
 }
 
+/**
+ * @swagger
+ * /api/media/{id}:
+ *   delete:
+ *     summary: Delete media file
+ *     description: Delete a media file by ID
+ *     tags:
+ *       - Media
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Media file ID
+ *     responses:
+ *       200:
+ *         description: Media file deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 媒体文件删除成功
+ *       404:
+ *         description: Media file not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

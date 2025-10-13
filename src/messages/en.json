@@ -131,5 +131,129 @@
       "description": "Innovative communication software application development",
       "button1": "Learn More"
     }
+  },
+  "products": {
+    "badge": "Core Product Series",
+    "title": "Product Center",
+    "description": "Communication equipment manufacturer, communication system solution provider, and communication software application developer",
+    "categories": {
+      "all": "All Products",
+      "switch": "Digital Switches",
+      "dispatch": "Program-Controlled Dispatchers",
+      "optical": "Optical Terminals",
+      "junction": "Junction Machines"
+    },
+    "viewAll": "View All Products",
+    "items": {
+      "switch": {
+        "name": "Digital Switch",
+        "description": "High-performance digital switches suitable for various communication networks, providing stable and reliable connection services",
+        "tag": "Core Product",
+        "price": "Contact for Quote",
+        "features": [
+          "High Performance",
+          "24/7 Service",
+          "Smart Management"
+        ],
+        "viewDetails": "View Details",
+        "quickView": "Quick View",
+        "inStock": "In Stock"
+      },
+      "dispatch": {
+        "name": "Program-Controlled Dispatcher",
+        "description": "Professional program-controlled dispatch system providing efficient command and dispatch solutions with multi-protocol support",
+        "tag": "Popular Product",
+        "price": "Contact for Quote",
+        "features": [
+          "Multi-Protocol",
+          "Real-time Dispatch",
+          "Cluster Deployment"
+        ]
+      },
+      "optical": {
+        "name": "Optical Terminal",
+        "description": "High-quality fiber optic transmission equipment supporting multiple signal transmissions with long-distance and high signal quality",
+        "tag": "New Release",
+        "price": "Contact for Quote",
+        "features": [
+          "Long Distance",
+          "Signal Optimization",
+          "Energy Efficient"
+        ]
+      },
+      "junction": {
+        "name": "Junction Machine",
+        "description": "Reliable junction switching equipment optimizing network connections and providing flexible network topology solutions",
+        "tag": "Best Seller",
+        "price": "Contact for Quote",
+        "features": [
+          "Flexible Topology",
+          "Reliable Connection",
+          "Easy Maintenance"
+        ]
+      },
+      "management": {
+        "name": "Communication Management System",
+        "description": "Intelligent communication management platform simplifying O&M processes with unified network management and monitoring functions",
+        "tag": "Smart Solution",
+        "price": "Contact for Quote",
+        "features": [
+          "Unified Management",
+          "AI-Assisted",
+          "Cloud Native"
+        ]
+      },
+      "security": {
+        "name": "Security Monitoring System",
+        "description": "Comprehensive security monitoring solution ensuring safety with support for various monitoring devices and protocols",
+        "tag": "Security Assurance",
+        "price": "Contact for Quote",
+        "features": [
+          "Full Coverage",
+          "Real-time Alerts",
+          "Data Analytics"
+        ]
+      }
+    },
+    "rating": "Reviews"
+  },
+  "solutions": {
+    "badge": "Custom Solutions",
+    "title": "Comprehensive Communication Solutions",
+    "description": "Shenou has formed a complete solution portfolio by integrating hardware and software to meet different customer business needs and help enterprises with digital transformation",
+    "enterprise": {
+      "title": "Enterprise Communication Solutions",
+      "description": "Comprehensive communication system solutions for various enterprises, including internal communication, customer service, remote office and other needs"
+    },
+    "security": {
+      "title": "Public Safety Communication Systems",
+      "description": "Professional communication command and dispatch systems for public security, fire protection, emergency and other departments to ensure smooth communication at critical moments"
+    },
+    "features": {
+      "reliable": "High performance and reliability, 7×24 stable operation",
+      "scalable": "Flexible expansion to adapt to different stages of enterprise development",
+      "easy": "Easy deployment, quickly realize business value"
+    },
+    "learnMore": "Learn More",
+    "cta": {
+      "title": "Need Custom Solutions?",
+      "description": "Our expert team can customize the most suitable communication solutions for your enterprise according to your specific needs",
+      "button": "Contact Our Expert Team"
+    }
+  },
+  "news": {
+    "title": "Latest News",
+    "viewAll": "View All",
+    "readMore": "Read More",
+    "items": {
+      "exhibition": "Shenou Communication Participates in 2023 Communication Equipment Exhibition",
+      "newProduct": "Shenou Releases New Generation Digital Switch Products",
+      "award": "Shenou Wins 'Top 10 Communication Equipment Brands of 2023'"
+    }
+  },
+  "partners": {
+    "title": "Partners",
+    "description": "Working together for mutual benefit, building cloud ecosystems with global partners",
+    "join": "Join Partner Program"
   }
 }

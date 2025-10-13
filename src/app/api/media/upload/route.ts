@@ -4,6 +4,73 @@ import { authOptions } from "../../../../../lib/auth";
 import { validateFile, saveFile, getFileType } from "../../../../../lib/upload";
 import { MediaService } from "../../../../../services/mediaService";
 
+/**
+ * @swagger
+ * /api/media/upload:
+ *   post:
+ *     summary: Upload media file
+ *     description: Upload a single media file (requires ADMIN role)
+ *     tags:
+ *       - Media
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: File to upload
+ *               folder:
+ *                 type: string
+ *                 description: Optional folder path
+ *               alt:
+ *                 type: string
+ *                 description: Alternative text for image
+ *               caption:
+ *                 type: string
+ *                 description: Caption for the file
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *                   example: 文件上传成功
+ *       400:
+ *         description: Bad request (no file, invalid file type, etc.)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden (requires ADMIN role)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

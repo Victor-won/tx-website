@@ -2,6 +2,57 @@ import { NextRequest, NextResponse } from "next/server";
 import { ProductService } from "../../../../services/productService";
 import { CreateProductSchema } from "../../../../types";
 
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Get all products
+ *     description: Retrieve a paginated list of products with optional filters
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [DRAFT, PUBLISHED, ARCHIVED]
+ *         description: Product status filter
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: string
+ *         description: Category ID filter
+ *     responses:
+ *       200:
+ *         description: Products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginationResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -33,6 +84,83 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Create a new product
+ *     description: Create a new product with the provided data
+ *     tags:
+ *       - Products
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nameZh
+ *               - slug
+ *               - sku
+ *             properties:
+ *               nameZh:
+ *                 type: string
+ *                 description: Product name in Chinese
+ *               nameEn:
+ *                 type: string
+ *                 description: Product name in English
+ *               slug:
+ *                 type: string
+ *                 description: URL-friendly identifier
+ *               sku:
+ *                 type: string
+ *                 description: Stock keeping unit
+ *               descriptionZh:
+ *                 type: string
+ *                 description: Product description in Chinese
+ *               descriptionEn:
+ *                 type: string
+ *                 description: Product description in English
+ *               price:
+ *                 type: number
+ *                 format: decimal
+ *                 description: Product price
+ *               categoryId:
+ *                 type: string
+ *                 description: Category ID
+ *               status:
+ *                 type: string
+ *                 enum: [DRAFT, PUBLISHED, ARCHIVED]
+ *                 default: DRAFT
+ *     responses:
+ *       200:
+ *         description: Product created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *                   example: 产品创建成功
+ *       400:
+ *         description: Bad request (duplicate slug/SKU or validation error)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

@@ -4,6 +4,71 @@ import { authOptions } from "../../../../../lib/auth";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 
+/**
+ * @swagger
+ * /api/upload/image:
+ *   post:
+ *     summary: Upload image for categories
+ *     description: Upload an image file for category use (requires ADMIN role)
+ *     tags:
+ *       - Media
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file (JPEG, PNG, GIF, WebP, max 5MB)
+ *     responses:
+ *       200:
+ *         description: Image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                       example: /api/uploads/categories/1234567890-abc123.jpg
+ *                     filename:
+ *                       type: string
+ *                     size:
+ *                       type: integer
+ *                     type:
+ *                       type: string
+ *       400:
+ *         description: Bad request (no file, invalid type, size exceeded)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden (requires ADMIN role)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

@@ -83,6 +83,71 @@ async function translateHtml(html: string, targetLang: string): Promise<string> 
   return result;
 }
 
+/**
+ * @swagger
+ * /api/translate:
+ *   post:
+ *     summary: Translate text
+ *     description: Translate text from Chinese to target language (requires ADMIN role)
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Text to translate (supports plain text and HTML)
+ *               targetLang:
+ *                 type: string
+ *                 default: en
+ *                 description: Target language code (e.g., en, es, fr)
+ *     responses:
+ *       200:
+ *         description: Translation successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     originalText:
+ *                       type: string
+ *                     translatedText:
+ *                       type: string
+ *                     targetLang:
+ *                       type: string
+ *       400:
+ *         description: Bad request (empty text)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden (requires ADMIN role)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

@@ -4,6 +4,51 @@ import { CategoryService } from "../../../../services/categoryService";
 import { CreateCategorySchema } from "../../../../types";
 import { authOptions } from "../../../../lib/auth";
 
+/**
+ * @swagger
+ * /api/categories:
+ *   get:
+ *     summary: Get all categories
+ *     description: Retrieve a paginated list of categories with optional filters
+ *     tags:
+ *       - Categories
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword
+ *       - in: query
+ *         name: parentId
+ *         schema:
+ *           type: string
+ *         description: Parent category ID filter (use 'null' for root categories)
+ *     responses:
+ *       200:
+ *         description: Categories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginationResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -33,6 +78,84 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/categories:
+ *   post:
+ *     summary: Create a new category
+ *     description: Create a new category (requires ADMIN role)
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nameZh
+ *               - slug
+ *             properties:
+ *               nameZh:
+ *                 type: string
+ *                 description: Category name in Chinese
+ *               nameEn:
+ *                 type: string
+ *                 description: Category name in English
+ *               slug:
+ *                 type: string
+ *                 description: URL-friendly identifier
+ *               descriptionZh:
+ *                 type: string
+ *                 description: Category description in Chinese
+ *               descriptionEn:
+ *                 type: string
+ *                 description: Category description in English
+ *               parentId:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Parent category ID
+ *               order:
+ *                 type: integer
+ *                 default: 0
+ *                 description: Display order
+ *     responses:
+ *       200:
+ *         description: Category created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *                   example: 分类创建成功
+ *       400:
+ *         description: Bad request (duplicate slug or validation error)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden (requires ADMIN role)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

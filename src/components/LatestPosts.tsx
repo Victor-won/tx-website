@@ -15,6 +15,7 @@ interface Post {
   category?: {
     id: string;
     name: string;
+    nameEn: string;
   };
   createdAt: string;
   publishedAt?: string;
@@ -60,7 +61,7 @@ export function LatestPosts() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold">
-            {locale === "zh" ? "最新文章" : "Latest Posts"}
+            {locale === "zh" ? "企业资讯" : "Corporate information"}
           </h2>
           <Link
             href={`/${locale}/posts`}
@@ -98,7 +99,7 @@ export function LatestPosts() {
                       href={`/${locale}/posts?category=${post.category.id}`}
                       className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                     >
-                      {post.category.name}
+                      {locale === "en" ? post.category.nameEn : post.category.name }
                     </Link>
                   )}
                   <h3 className="text-xl font-bold mt-2 mb-2">
