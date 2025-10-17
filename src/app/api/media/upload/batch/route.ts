@@ -34,7 +34,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const results = {
+    const results: {
+      success: Array<{ fileName: string; data: any }>;
+      failed: Array<{ fileName: string; error: string }>;
+    } = {
       success: [],
       failed: [],
     };

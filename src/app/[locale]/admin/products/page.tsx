@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Specification, Feature } from "@/../../../../types/product";
+import type { Specification, Feature } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -191,7 +191,12 @@ export default function ProductsPage() {
     console.log("开始自动翻译...");
 
     try {
-      const promises = [];
+      type TranslateResult =
+        | { field: string; data: any }
+        | { field: "specification"; subfield: "name" | "value"; index: number; data: any }
+        | { field: "feature"; subfield: "title" | "description"; index: number; data: any };
+
+      const promises: Promise<TranslateResult>[] = [];
 
       // 翻译基础字段
       if (formData.name) {
@@ -361,7 +366,7 @@ export default function ProductsPage() {
       results.forEach((result) => {
         if (!result) return;
 
-        if (result.field === "specification") {
+        if (result.field === "specification" && "subfield" in result && "index" in result) {
           if (result.data?.success && result.data?.data?.translatedText) {
             if (result.subfield === "name") {
               newSpecifications[result.index].nameEn = result.data.data.translatedText;
@@ -373,7 +378,7 @@ export default function ProductsPage() {
           } else {
             failedFields.push(`规格 ${result.index + 1} ${result.subfield === "name" ? "名称" : "值"}`);
           }
-        } else if (result.field === "feature") {
+        } else if (result.field === "feature" && "subfield" in result && "index" in result) {
           if (result.data?.success && result.data?.data?.translatedText) {
             if (result.subfield === "title") {
               newFeatures[result.index].titleEn = result.data.data.translatedText;

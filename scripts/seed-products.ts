@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ProductStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -73,7 +73,7 @@ async function main() {
       salePrice: 999.00,
       sku: "SFP-10G-LR-001",
       stock: 150,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[0].id,
       specifications: [
@@ -107,7 +107,7 @@ async function main() {
       salePrice: 1699.00,
       sku: "SFP28-25G-LR-002",
       stock: 80,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[0].id,
       specifications: [
@@ -139,7 +139,7 @@ async function main() {
       salePrice: 2999.00,
       sku: "QSFP-40G-SR4-003",
       stock: 60,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[0].id,
       specifications: [
@@ -171,7 +171,7 @@ async function main() {
       salePrice: 7999.00,
       sku: "QSFP28-100G-LR4-004",
       stock: 45,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[0].id,
       specifications: [
@@ -205,7 +205,7 @@ async function main() {
       salePrice: 5999.00,
       sku: "SW-48G-4SFP-001",
       stock: 35,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[1].id,
       specifications: [
@@ -238,7 +238,7 @@ async function main() {
       salePrice: 16999.00,
       sku: "SW-24X-10G-002",
       stock: 20,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[1].id,
       specifications: [
@@ -272,7 +272,7 @@ async function main() {
       salePrice: 3299.00,
       sku: "RT-1000G-001",
       stock: 50,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[2].id,
       specifications: [
@@ -304,7 +304,7 @@ async function main() {
       salePrice: 4999.00,
       sku: "RT-5G-IND-002",
       stock: 30,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[2].id,
       specifications: [
@@ -336,7 +336,7 @@ async function main() {
       salePrice: 25.00,
       sku: "FC-SM-LC-LC-3M",
       stock: 500,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[3].id,
       specifications: [
@@ -366,7 +366,7 @@ async function main() {
       salePrice: 18.00,
       sku: "FC-MM-SC-SC-5M",
       stock: 800,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[3].id,
       specifications: [
@@ -395,7 +395,7 @@ async function main() {
       salePrice: 1.20,
       sku: "CAT6-UTP-305M",
       stock: 1000,
-      status: "ACTIVE",
+      status: ProductStatus.ACTIVE,
       featuredImage: "/SL-021920-28230-15.jpg",
       categoryId: categories[3].id,
       specifications: [

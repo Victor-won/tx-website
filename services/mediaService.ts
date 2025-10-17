@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { CreateMediaFile, UpdateMediaFile } from "../types";
 import { deleteFile } from "../lib/upload";
+import { MediaFileType } from "@prisma/client";
 
 export class MediaService {
   static async getAll(params?: {
@@ -9,7 +10,7 @@ export class MediaService {
     search?: string;
     mimeType?: string;
     folder?: string;
-    fileType?: string;
+    fileType?: MediaFileType;
   }) {
     const { page = 1, limit = 10, search, mimeType, folder, fileType } = params || {};
     const skip = (page - 1) * limit;

@@ -982,7 +982,7 @@ export default function PostsPage() {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={handleAutoTranslate}
+                onClick={() => handleAutoTranslate()}
                 disabled={translating}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >

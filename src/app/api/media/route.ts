@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MediaService } from "../../../../services/mediaService";
 import { CreateMediaFileSchema } from "../../../../types";
+import { MediaFileType } from "@prisma/client";
 
 /**
  * @swagger
@@ -66,7 +67,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || undefined;
     const mimeType = searchParams.get("mimeType") || undefined;
     const folder = searchParams.get("folder") || undefined;
-    const fileType = searchParams.get("fileType") || undefined;
+    const fileTypeParam = searchParams.get("fileType");
+    const fileType = fileTypeParam ? (fileTypeParam as MediaFileType) : undefined;
 
     const result = await MediaService.getAll({
       page,

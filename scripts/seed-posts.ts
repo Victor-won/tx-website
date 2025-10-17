@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, PostStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -151,7 +151,7 @@ async function main() {
       excerpt: "5G商用推动数据中心互连技术快速升级，400G/800G光模块、相干光技术成为主流趋势。",
       excerptEn: "5G commercialization drives rapid DCI technology upgrades, with 400G/800G optical modules and coherent optics becoming mainstream.",
       featuredImage: "/uploads/general/1760074214448-w5dtgj93-________.jpeg",
-      status: "PUBLISHED",
+      status: PostStatus.PUBLISHED,
       categoryId: categories[0].id, // 新闻动态
       publishedAt: new Date("2025-01-10"),
     },
@@ -342,7 +342,7 @@ async function main() {
       excerpt: "深入解析光模块技术从10G到800G的演进历程，探讨关键技术突破和未来发展趋势。",
       excerptEn: "In-depth analysis of optical module technology evolution from 10G to 800G, discussing key breakthroughs and future trends.",
       featuredImage: "/uploads/general/1760074214448-w5dtgj93-________.jpeg",
-      status: "PUBLISHED",
+      status: PostStatus.PUBLISHED,
       categoryId: categories[1].id, // 技术文章
       publishedAt: new Date("2025-01-08"),
     },
@@ -629,7 +629,7 @@ async function main() {
       excerpt: "探讨智慧城市建设中的光网络解决方案，分享成功案例和最佳实践。",
       excerptEn: "Exploring optical network solutions for smart city development, sharing success cases and best practices.",
       featuredImage: "/uploads/general/1760074242212-uwa9tnc4-junjun.jpg",
-      status: "PUBLISHED",
+      status: PostStatus.PUBLISHED,
       categoryId: categories[2].id, // 解决方案
       publishedAt: new Date("2025-01-05"),
     },
@@ -994,7 +994,7 @@ async function main() {
       excerpt: "深入分析AI算力网络的技术需求、解决方案和实际部署案例，展望未来发展方向。",
       excerptEn: "In-depth analysis of AI computing network technical requirements, solutions, and deployment cases, with future outlook.",
       featuredImage: "/uploads/general/1760074214448-w5dtgj93-________.jpeg",
-      status: "PUBLISHED",
+      status: PostStatus.PUBLISHED,
       categoryId: categories[3].id, // 行业洞察
       publishedAt: new Date("2025-01-03"),
     },
@@ -1495,7 +1495,7 @@ async function main() {
       excerpt: "分享数据中心绿色节能技术实践，包括低功耗设备、智能制冷和可再生能源利用。",
       excerptEn: "Sharing green energy-saving technology practices in data centers, including low-power equipment, smart cooling, and renewable energy utilization.",
       featuredImage: "/uploads/general/1760074242212-uwa9tnc4-junjun.jpg",
-      status: "PUBLISHED",
+      status: PostStatus.PUBLISHED,
       categoryId: categories[2].id, // 解决方案
       publishedAt: new Date("2025-01-01"),
     },

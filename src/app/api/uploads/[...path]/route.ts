@@ -29,7 +29,7 @@ export async function GET(
 
     const contentType = contentTypes[ext] || "application/octet-stream";
 
-    return new NextResponse(file, {
+    return new NextResponse(new Uint8Array(file), {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",

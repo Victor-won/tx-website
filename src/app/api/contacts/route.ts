@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { ContactStatus } from "@prisma/client";
 
 /**
  * @swagger
@@ -40,7 +41,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
-    const status = searchParams.get("status") || undefined;
+    const statusParam = searchParams.get("status");
+    const status = statusParam ? (statusParam as ContactStatus) : undefined;
     const search = searchParams.get("search") || undefined;
 
     const skip = (page - 1) * limit;
@@ -156,7 +158,7 @@ export async function POST(request: NextRequest) {
         company: company || null,
         subject,
         message,
-        status: "PENDING",
+        status: ContactStatus.PENDING,
       },
     });
 
