@@ -55,9 +55,9 @@ async function translateHtml(html: string, targetLang: string): Promise<string> 
   const tagMap: { [key: string]: string } = {};
   let tagCounter = 0;
 
-  // 将所有 HTML 标签替换为占位符
+  // 将所有 HTML 标签替换为占位符（使用数字和下划线，避免大小写问题）
   let processedHtml = html.replace(/<[^>]+>/g, (match) => {
-    const placeholder = `{{TAG_${tagCounter}}}`;
+    const placeholder = `__HTMLTAG${tagCounter}__`;
     tagMap[placeholder] = match;
     tagCounter++;
     return placeholder;
@@ -74,10 +74,20 @@ async function translateHtml(html: string, targetLang: string): Promise<string> 
   // 翻译纯文本
   const translatedText = await translatePlainText(processedHtml, targetLang);
 
-  // 将占位符还原为原始 HTML 标签
+  // 将占位符还原为原始 HTML 标签（支持大小写不敏感的匹配，以及空格插入）
   let result = translatedText;
   for (const [placeholder, tag] of Object.entries(tagMap)) {
-    result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), tag);
+    // 创建一个灵活的正则表达式，可以匹配带有或不带空格的占位符
+    // 例如：__HTMLTAG0__ 或 __ HTMLTAG0 __ 或 __htmltag0__ 或 __ htmltag 0 __
+    // 将 __HTMLTAG0__ 转换为 __\s*HTMLTAG\s*0\s*__
+    const flexiblePattern = placeholder
+      .replace(/_/g, '_\\s*')  // 允许下划线后有空格
+      .replace(/([A-Z]+)/g, '$1\\s*')  // 允许字母后有空格
+      .replace(/(\d+)/g, '$1\\s*');  // 允许数字后有空格
+
+    // 创建大小写不敏感的正则表达式
+    const regex = new RegExp(flexiblePattern, 'gi');
+    result = result.replace(regex, tag);
   }
 
   return result;

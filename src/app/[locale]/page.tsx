@@ -3,10 +3,9 @@ import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { LatestPosts } from "@/components/LatestPosts";
 import SiteLayout from "@/components/SiteLayout";
-import Link from "next/link";
 import Carousel from "@/components/HomeCarousel";
 import PartnerSection from "@/components/HomePartner";
-import ProductCard from "@/components/HomeProduct";
+import HomeProducts from "@/components/HomeProducts";
 import SolutionSection from "@/components/HomeSolutions";
 
 export default function Home() {
@@ -18,29 +17,44 @@ export default function Home() {
       <SiteLayout>
           {/* 轮播图 */}
           <Carousel />
-          {/* 产品展示 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-20">
-              {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                      key={index}
-                      className={`animate-on-scroll ${
-                          index % 3 === 0 ? 'bounce-in' : index % 3 === 1 ? 'scale-in' : 'slide-up'
-                      } delay-${(index % 3) * 150 + 200}`}
-                  >
-                      <ProductCard index={index + 1} />
+
+          {/* 产品展示区域 */}
+          <section className="py-16 md:py-12 bg-gradient-to-b bg-gray-100">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  {/* 标题区域 */}
+                  <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
+                          {t('products.title')}
+                      </h2>
+                      <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                          {t('products.description')}
+                      </p>
                   </div>
-              ))}
-          </div>
-          {/* 解决方案 */}
-          <div className="animate-on-scroll rotate-in delay-300">
-              <SolutionSection />
-          </div>
-          {/* 最新文章 */}
-          <LatestPosts />
-          {/* 合作伙伴 */}
-          <div className="animate-on-scroll bounce-in delay-500">
-              <PartnerSection />
-          </div>
+                  {/* 产品卡片网格 */}
+                  <HomeProducts />
+              </div>
+          </section>
+
+          {/* 解决方案区域 */}
+          <section>
+              <div className="animate-on-scroll fade-in">
+                  <SolutionSection />
+              </div>
+          </section>
+
+          {/* 最新文章区域 */}
+          <section className="py-16 md:py-12 bg-gray-100">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <LatestPosts />
+              </div>
+          </section>
+
+          {/* 合作伙伴区域 */}
+          <section>
+              <div className="animate-on-scroll fade-in">
+                  <PartnerSection />
+              </div>
+          </section>
       </SiteLayout>
   );
 }

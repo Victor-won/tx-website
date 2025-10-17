@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, ArrowRight } from "lucide-react";
 
 interface Post {
   id: string;
@@ -47,7 +51,10 @@ export function LatestPosts() {
   if (loading) {
     return (
       <div className="py-12 text-center">
-        <div className="text-gray-500">{locale === "zh" ? "加载中..." : "Loading..."}</div>
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <span className="text-muted-foreground">{locale === "zh" ? "加载中..." : "Loading..."}</span>
+        </div>
       </div>
     );
   }
@@ -57,73 +64,93 @@ export function LatestPosts() {
   }
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">
-            {locale === "zh" ? "企业资讯" : "Corporate information"}
+    <div>
+      {/* 标题区域 */}
+      <div className="flex justify-between items-center mb-8 md:mb-12">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
+            {locale === "zh" ? "企业资讯" : "Corporate Information"}
           </h2>
-          <Link
-            href={`/${locale}/posts`}
-            className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-          >
-            {locale === "zh" ? "查看全部" : "View All"}
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
         </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/${locale}/posts`} className="inline-flex items-center gap-2">
+            <span className="hidden sm:inline">{locale === "zh" ? "查看全部" : "View All"}</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </Button>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => {
-            const title = locale === "en" && post.titleEn ? post.titleEn : post.title;
-            const excerpt = locale === "en" && post.excerptEn ? post.excerptEn : post.excerpt;
+      {/* 文章网格 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {posts.map((post, index) => {
+          const title = locale === "en" && post.titleEn ? post.titleEn : post.title;
+          const excerpt = locale === "en" && post.excerptEn ? post.excerptEn : post.excerpt;
 
-            return (
-              <article
-                key={post.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                {post.featuredImage && (
-                  <Link href={`/${locale}/posts/${post.slug}`}>
+          return (
+            <Card
+              key={post.id}
+              className="group overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-1"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              {post.featuredImage && (
+                <Link href={`/${locale}/posts/${post.slug}`}>
+                  <div className="relative h-48 overflow-hidden">
                     <img
                       src={post.featuredImage}
                       alt={title}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                  </Link>
-                )}
-                <div className="p-6">
-                  {post.category && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                </Link>
+              )}
+
+              <CardHeader>
+                {post.category && (
+                  <Badge variant="outline" className="w-fit mb-2 text-xs px-2 py-0.5">
                     <Link
                       href={`/${locale}/posts?category=${post.category.id}`}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      className="hover:text-primary transition-colors"
                     >
-                      {locale === "en" ? post.category.nameEn : post.category.name }
+                      {locale === "en" ? post.category.nameEn : post.category.name}
                     </Link>
-                  )}
-                  <h3 className="text-xl font-bold mt-2 mb-2">
-                    <Link
-                      href={`/${locale}/posts/${post.slug}`}
-                      className="hover:text-blue-600 transition-colors"
-                    >
-                      {title}
-                    </Link>
-                  </h3>
-                  {excerpt && (
-                    <p className="text-gray-600 mb-4 line-clamp-3">{excerpt}</p>
-                  )}
-                  <div className="text-sm text-gray-500">
+                  </Badge>
+                )}
+                <CardTitle className="text-base md:text-lg line-clamp-2 group-hover:text-primary transition-colors font-bold text-gray-900">
+                  <Link href={`/${locale}/posts/${post.slug}`}>
+                    {title}
+                  </Link>
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent>
+                {excerpt && (
+                  <CardDescription className="text-sm line-clamp-3 leading-relaxed text-gray-600">
+                    {excerpt}
+                  </CardDescription>
+                )}
+              </CardContent>
+
+              <CardFooter className="flex justify-between items-center pt-4 border-t">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <time dateTime={post.publishedAt || post.createdAt}>
                     {new Date(post.publishedAt || post.createdAt).toLocaleDateString(
                       locale === "zh" ? "zh-CN" : "en-US"
                     )}
-                  </div>
+                  </time>
                 </div>
-              </article>
-            );
-          })}
-        </div>
+                <Button variant="ghost" size="sm" asChild className="h-8 text-xs">
+                  <Link href={`/${locale}/posts/${post.slug}`} className="inline-flex items-center gap-1">
+                    {locale === "zh" ? "阅读" : "Read"}
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
-    </section>
+    </div>
   );
 }

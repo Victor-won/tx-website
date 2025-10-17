@@ -1,189 +1,164 @@
-// 解决方案部分
+"use client";
+
+import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check, ArrowRight, Cpu, Shield, Server, Building } from "lucide-react";
+
+interface Solution {
+    id: string;
+    title: string;
+    titleEn: string | null;
+    description: string;
+    descriptionEn: string | null;
+    icon: string;
+    color: string;
+    iconBg: string;
+    features: Array<string | { text: string; textEn?: string }> | null;
+}
+
+const iconMap: { [key: string]: any } = {
+    Cpu,
+    Shield,
+    Server,
+    Building,
+};
+
 export default function SolutionSection() {
-    // 模拟解决方案数据
-    const solutions = [
-        {
-            title: '企业通信解决方案',
-            description: '为各类企业提供全面的通信系统解决方案，包括内部通信、客户服务、远程办公等多方面需求',
-            icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-                    />
-                </svg>
-            ),
-            color: 'from-blue-500 to-blue-600',
-            iconBg: 'bg-blue-600',
-        },
-        {
-            title: '公共安全通信系统',
-            description: '为公安、消防、应急等部门提供专业的通信指挥调度系统，确保关键时刻通信畅通',
-            icon: (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                    />
-                </svg>
-            ),
-            color: 'from-indigo-500 to-indigo-600',
-            iconBg: 'bg-indigo-600',
-        },
-    ];
+    const locale = useLocale();
+    const [solutions, setSolutions] = useState<Solution[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchSolutions() {
+            try {
+                const response = await fetch("/api/solutions?status=true");
+                const data = await response.json();
+                if (data.success) {
+                    setSolutions(data.data);
+                }
+            } catch (error) {
+                console.error("获取解决方案失败:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchSolutions();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="py-16 bg-white">
+                <div className="container mx-auto px-4">
+                    <div className="text-center py-12">
+                        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (solutions.length === 0) {
+        return null;
+    }
 
     return (
         <div className="py-16 bg-white">
             <div className="container mx-auto px-4">
                 {/* 标题部分 */}
                 <div className="text-center mb-16 max-w-3xl mx-auto">
-                    <div className="inline-block mb-4">
-                        <span className="px-4 py-1 text-xs font-semibold bg-primary/10 text-primary rounded-full">
-                            定制解决方案
-                        </span>
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6 tracking-tight">
-                        全面的通信解决方案
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
+                        {locale === "zh" ? "全面的通信解决方案" : "Comprehensive Communication Solutions"}
                     </h2>
-                    <p className="text-lg text-gray-600 leading-relaxed">
-                        申瓯通过整合其硬件、软件，现已形成完整的解决方案组，以满足不同客户的业务需求，助力企业数字化转型
+                    <p className="text-base md:text-lg text-gray-600 leading-relaxed">
+                        {locale === "zh"
+                            ? "通过整合硬件、软件，现已形成完整的解决方案组，以满足不同客户的业务需求，助力企业数字化转型"
+                            : "By integrating hardware and software, we have formed a complete solution suite to meet different customer business needs and help enterprises with digital transformation"}
                     </p>
                 </div>
 
                 {/* 解决方案卡片 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                    {solutions.map((solution, index) => (
-                        <div
-                            key={index}
-                            className={`animate-on-scroll slide-up delay-${
-                                index * 100 + 100
-                            } rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group m-4`}
-                        >
-                            {/* 渐变背景卡片 */}
-                            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-1">
-                                <div className="bg-white rounded-lg p-8 h-full">
-                                    {/* 图标和标题区域 */}
-                                    <div className="flex items-start mb-6 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-16">
+                    {solutions.map((solution, index) => {
+                        const Icon = iconMap[solution.icon] || Cpu;
+                        const title = locale === "en" && solution.titleEn ? solution.titleEn : solution.title;
+                        const description = locale === "en" && solution.descriptionEn ? solution.descriptionEn : solution.description;
+
+                        return (
+                            <Card
+                                key={solution.id}
+                                className="group hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border-gray-100/50"
+                            >
+                                <CardHeader>
+                                    <div className="flex items-start gap-5 mb-4">
                                         <div
-                                            className={`w-14 h-14 ${solution.iconBg} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105`}
+                                            className={`w-14 h-14 ${solution.iconBg} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105`}
                                         >
-                                            {solution.icon}
+                                            <Icon className="w-6 h-6 text-white" />
                                         </div>
-                                        <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
-                                            {solution.title}
-                                        </h3>
+                                        <CardTitle className="text-lg md:text-xl font-bold text-gray-900">
+                                            {title}
+                                        </CardTitle>
                                     </div>
+                                    <CardDescription className="text-sm md:text-base leading-relaxed text-gray-600">
+                                        {description}
+                                    </CardDescription>
+                                </CardHeader>
 
-                                    {/* 描述文字 */}
-                                    <p className="text-gray-600 mb-8 leading-relaxed">{solution.description}</p>
-
+                                <CardContent className="space-y-6">
                                     {/* 特点列表 */}
-                                    <ul className="space-y-3 mb-8">
-                                        <li className="flex items-start">
-                                            <svg
-                                                className="w-5 h-5 text-green-500 mt-0.5 mr-2"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <span className="text-gray-700 text-sm">高性能可靠，7×24小时稳定运行</span>
-                                        </li>
-                                        <li className="flex items-start">
-                                            <svg
-                                                className="w-5 h-5 text-green-500 mt-0.5 mr-2"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <span className="text-gray-700 text-sm">
-                                                灵活扩展，适应企业不同发展阶段
-                                            </span>
-                                        </li>
-                                        <li className="flex items-start">
-                                            <svg
-                                                className="w-5 h-5 text-green-500 mt-0.5 mr-2"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <span className="text-gray-700 text-sm">简易部署，快速实现业务价值</span>
-                                        </li>
-                                    </ul>
+                                    {solution.features && Array.isArray(solution.features) && solution.features.length > 0 && (
+                                        <ul className="space-y-3">
+                                            {solution.features.map((feature, idx) => {
+                                                // 处理两种格式：字符串或对象
+                                                const featureText = typeof feature === 'string'
+                                                    ? feature
+                                                    : (locale === "en" && feature.textEn ? feature.textEn : feature.text);
+
+                                                return (
+                                                    <li key={idx} className="flex items-start gap-2">
+                                                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                        <span className="text-sm text-gray-700">{featureText}</span>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    )}
 
                                     {/* 行动按钮 */}
-                                    <a
-                                        href="/post"
-                                        className="inline-flex items-center px-6 py-3 bg-white border border-primary text-primary font-medium rounded-lg hover:bg-primary hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
-                                    >
-                                        了解更多
-                                        <svg
-                                            className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                            />
-                                        </svg>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                                    <Button variant="outline" className="w-full group/btn" asChild>
+                                        <a href={`/${locale}/posts`}>
+                                            {locale === "zh" ? "了解更多" : "Learn More"}
+                                            <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                                        </a>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
 
-                {/* 额外信息卡片 */}
-                <div className="mt-16 bg-gradient-to-r from-primary to-primary-dark rounded-2xl overflow-hidden shadow-xl">
-                    <div className="p-8 md:p-12 text-center text-white">
-                        <h3 className="text-2xl md:text-3xl font-bold mb-4">需要定制解决方案？</h3>
-                        <p className="max-w-2xl mx-auto mb-8 text-blue-100">
-                            我们的专家团队可以根据您的具体需求，量身定制最适合您企业的通信解决方案
+                {/* CTA 卡片 */}
+                <Card className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground border-0 shadow-xl">
+                    <CardContent className="p-8 md:p-12 text-center">
+                        <h3 className="text-xl md:text-2xl font-bold mb-3">
+                            {locale === "zh" ? "需要定制解决方案？" : "Need a Custom Solution?"}
+                        </h3>
+                        <p className="max-w-2xl mx-auto mb-8 text-sm md:text-base text-primary-foreground/90">
+                            {locale === "zh"
+                                ? "我们的专家团队可以根据您的具体需求，量身定制最适合您企业的通信解决方案"
+                                : "Our expert team can customize the most suitable communication solution for your enterprise based on your specific needs"}
                         </p>
-                        <a
-                            href="/post"
-                            className="inline-flex items-center px-8 py-4 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                        >
-                            联系我们的专家团队
-                            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
+                        <Button size="lg" variant="secondary" asChild className="shadow-lg hover:shadow-xl">
+                            <a href={`/${locale}/contact`} className="inline-flex items-center">
+                                {locale === "zh" ? "联系我们的专家团队" : "Contact Our Expert Team"}
+                                <ArrowRight className="ml-2 w-5 h-5" />
+                            </a>
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

@@ -70,9 +70,17 @@ export async function GET(request: NextRequest) {
       categoryId,
     });
 
+    // Convert Decimal fields to numbers for proper JSON serialization
+    const serializedData = result.data.map(product => ({
+      ...product,
+      price: product.price ? Number(product.price) : product.price,
+      salePrice: product.salePrice ? Number(product.salePrice) : product.salePrice,
+      rating: product.rating ? Number(product.rating) : product.rating,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: result.data,
+      data: serializedData,
       pagination: result.pagination,
     });
   } catch (error) {

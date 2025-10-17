@@ -58,9 +58,17 @@ export async function GET(
       );
     }
 
+    // Convert Decimal fields to numbers for proper JSON serialization
+    const serializedProduct = {
+      ...product,
+      price: product.price ? Number(product.price) : product.price,
+      salePrice: product.salePrice ? Number(product.salePrice) : product.salePrice,
+      rating: product.rating ? Number(product.rating) : product.rating,
+    };
+
     return NextResponse.json({
       success: true,
-      data: product,
+      data: serializedProduct,
     });
   } catch (error) {
     console.error("获取产品详情失败:", error);

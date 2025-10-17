@@ -32,7 +32,19 @@
       "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma migrate dev --name add_category_i18n_fields)",
       "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma migrate dev --name add_media_file_enhancements)",
       "Bash(npm cache clean:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma migrate dev:*)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx tsx scripts/seed-products.ts)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx tsx scripts/update-product-images.ts)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx tsx scripts/seed-posts.ts)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma migrate dev --name add_contact_model)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma studio:*)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx tsx scripts/seed-solutions.ts)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx tsx scripts/seed-partners.ts)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx tsx scripts/seed-banners.ts)",
+      "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma generate:*)"
     ],
     "deny": [],
     "ask": []

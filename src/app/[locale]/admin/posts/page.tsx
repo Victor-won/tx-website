@@ -95,6 +95,12 @@ export default function PostsPage() {
   });
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
   const [translating, setTranslating] = useState(false);
+  const [translatingField, setTranslatingField] = useState<string | null>(null);
+  const [translationProgress, setTranslationProgress] = useState({
+    current: 0,
+    total: 0,
+    field: "",
+  });
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -316,71 +322,107 @@ export default function PostsPage() {
     );
   };
 
-  const handleAutoTranslate = async () => {
+  const handleAutoTranslate = async (force = false) => {
     if (!formData.title && !formData.content && !formData.excerpt) {
       alert("请先填写中文内容");
       return;
     }
 
     setTranslating(true);
+    setTranslationProgress({ current: 0, total: 0, field: "" });
 
     try {
-      const promises = [];
+      const toTranslate = [];
 
-      // 翻译标题
-      if (formData.title && !formData.titleEn) {
-        promises.push(
-          fetch("/api/translate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: formData.title, targetLang: "en" }),
-          }).then(res => res.json())
-        );
-      } else {
-        promises.push(Promise.resolve(null));
+      // 收集需要翻译的字段
+      if (formData.title && (force || !formData.titleEn)) {
+        toTranslate.push({ field: "title", text: formData.title, target: "titleEn" });
+      }
+      if (formData.excerpt && (force || !formData.excerptEn)) {
+        toTranslate.push({ field: "excerpt", text: formData.excerpt, target: "excerptEn" });
+      }
+      if (formData.content && (force || !formData.contentEn)) {
+        toTranslate.push({ field: "content", text: formData.content, target: "contentEn" });
       }
 
-      // 翻译摘要
-      if (formData.excerpt && !formData.excerptEn) {
-        promises.push(
-          fetch("/api/translate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: formData.excerpt, targetLang: "en" }),
-          }).then(res => res.json())
-        );
-      } else {
-        promises.push(Promise.resolve(null));
+      if (toTranslate.length === 0) {
+        alert("所有字段都已翻译！如需重新翻译,请先清空英文内容或使用独立翻译按钮。");
+        setTranslating(false);
+        return;
       }
 
-      // 翻译内容
-      if (formData.content && !formData.contentEn) {
-        promises.push(
-          fetch("/api/translate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: formData.content, targetLang: "en" }),
-          }).then(res => res.json())
-        );
-      } else {
-        promises.push(Promise.resolve(null));
+      setTranslationProgress({ current: 0, total: toTranslate.length, field: "" });
+
+      // 逐个翻译并更新进度
+      for (let i = 0; i < toTranslate.length; i++) {
+        const item = toTranslate[i];
+        setTranslationProgress({ current: i, total: toTranslate.length, field: item.field });
+
+        const response = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: item.text, targetLang: "en" }),
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.data?.translatedText) {
+          setFormData((prev) => ({
+            ...prev,
+            [item.target]: result.data.translatedText,
+          }));
+        }
       }
 
-      const [titleResult, excerptResult, contentResult] = await Promise.all(promises);
-
-      setFormData((prev) => ({
-        ...prev,
-        titleEn: titleResult?.data?.translatedText || prev.titleEn,
-        excerptEn: excerptResult?.data?.translatedText || prev.excerptEn,
-        contentEn: contentResult?.data?.translatedText || prev.contentEn,
-      }));
-
+      setTranslationProgress({ current: toTranslate.length, total: toTranslate.length, field: "" });
       alert("翻译完成！");
     } catch (error) {
       console.error("翻译失败:", error);
       alert("翻译失败，请稍后重试");
     } finally {
       setTranslating(false);
+      setTranslatingField(null);
+    }
+  };
+
+  const handleTranslateField = async (sourceField: keyof FormData, targetField: keyof FormData, fieldName: string) => {
+    const sourceText = formData[sourceField] as string;
+
+    if (!sourceText) {
+      alert(`请先填写${fieldName}(中文)`);
+      return;
+    }
+
+    // 如果目标字段已有内容,询问是否覆盖
+    if (formData[targetField] && !confirm(`${fieldName}的英文版本已存在,是否重新翻译并覆盖?`)) {
+      return;
+    }
+
+    setTranslatingField(fieldName);
+
+    try {
+      const response = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: sourceText, targetLang: "en" }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data?.translatedText) {
+        setFormData((prev) => ({
+          ...prev,
+          [targetField]: result.data.translatedText,
+        }));
+        alert(`${fieldName}翻译完成！`);
+      } else {
+        alert(`${fieldName}翻译失败`);
+      }
+    } catch (error) {
+      console.error("翻译失败:", error);
+      alert(`${fieldName}翻译失败，请稍后重试`);
+    } finally {
+      setTranslatingField(null);
     }
   };
 
@@ -475,9 +517,28 @@ export default function PostsPage() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Title (English)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium">
+                      Title (English)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleTranslateField("title", "titleEn", "标题")}
+                      disabled={translatingField === "标题" || !formData.title}
+                      className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {translatingField === "标题" ? (
+                        <>
+                          <span className="animate-spin">⟳</span>
+                          翻译中
+                        </>
+                      ) : (
+                        <>
+                          🌐 翻译
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <input
                     type="text"
                     className="w-full px-3 py-2 border rounded"
@@ -522,9 +583,28 @@ export default function PostsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Excerpt (English)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium">
+                      Excerpt (English)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleTranslateField("excerpt", "excerptEn", "摘要")}
+                      disabled={translatingField === "摘要" || !formData.excerpt}
+                      className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {translatingField === "摘要" ? (
+                        <>
+                          <span className="animate-spin">⟳</span>
+                          翻译中
+                        </>
+                      ) : (
+                        <>
+                          🌐 翻译
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <textarea
                     className="w-full px-3 py-2 border rounded"
                     rows={3}
@@ -542,18 +622,18 @@ export default function PostsPage() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={handleAutoTranslate}
+                  onClick={() => handleAutoTranslate()}
                   disabled={translating}
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {translating ? (
                     <>
                       <span className="animate-spin">⟳</span>
-                      翻译中...
+                      翻译中 {translationProgress.total > 0 && `(${translationProgress.current}/${translationProgress.total})`}
                     </>
                   ) : (
                     <>
-                      🌐 自动翻译为英文
+                      🌐 批量翻译所有字段
                     </>
                   )}
                 </button>
@@ -581,9 +661,28 @@ export default function PostsPage() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Content (English)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium">
+                      Content (English)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleTranslateField("content", "contentEn", "内容")}
+                      disabled={translatingField === "内容" || !formData.content}
+                      className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {translatingField === "内容" ? (
+                        <>
+                          <span className="animate-spin">⟳</span>
+                          翻译中
+                        </>
+                      ) : (
+                        <>
+                          🌐 翻译
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <RichTextEditor
                     value={formData.contentEn}
                     onChange={(value) =>

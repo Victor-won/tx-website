@@ -28,6 +28,11 @@ interface Product {
   descriptionEn: string | null;
   shortDesc: string | null;
   shortDescEn: string | null;
+  tag: string | null;
+  tagEn: string | null;
+  priceDisplay: string | null;
+  priceDisplayEn: string | null;
+  rating: number | null;
   specifications: Specification[] | null;
   features: Feature[] | null;
   price: number;
@@ -62,6 +67,11 @@ interface ProductFormData {
   descriptionEn: string;
   shortDesc: string;
   shortDescEn: string;
+  tag: string;
+  tagEn: string;
+  priceDisplay: string;
+  priceDisplayEn: string;
+  rating: string;
   specifications: Specification[];
   features: Feature[];
   price: string;
@@ -94,6 +104,11 @@ export default function ProductsPage() {
     descriptionEn: "",
     shortDesc: "",
     shortDescEn: "",
+    tag: "",
+    tagEn: "",
+    priceDisplay: "",
+    priceDisplayEn: "",
+    rating: "",
     specifications: [],
     features: [],
     price: "",
@@ -162,25 +177,40 @@ export default function ProductsPage() {
   };
 
   const handleAutoTranslate = async () => {
+    // 检查是否有需要翻译的内容
+    const hasBasicContent = formData.name || formData.description || formData.shortDesc || formData.tag || formData.priceDisplay;
+    const hasSpecifications = formData.specifications.some(spec => spec.name || spec.value);
+    const hasFeatures = formData.features.some(feature => feature.title || feature.description);
+
+    if (!hasBasicContent && !hasSpecifications && !hasFeatures) {
+      alert("请先填写需要翻译的中文内容");
+      return;
+    }
+
     setTranslating(true);
+    console.log("开始自动翻译...");
+
     try {
       const promises = [];
 
-      // 翻译名称
-      if (formData.name && !formData.nameEn) {
+      // 翻译基础字段
+      if (formData.name) {
+        console.log("准备翻译名称:", formData.name);
         promises.push(
           fetch("/api/translate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: formData.name, targetLang: "en" }),
-          }).then((res) => res.json())
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("名称翻译结果:", data);
+            return { field: "name", data };
+          })
         );
-      } else {
-        promises.push(Promise.resolve(null));
       }
 
-      // 翻译描述
-      if (formData.description && !formData.descriptionEn) {
+      if (formData.description) {
+        console.log("准备翻译描述 (长度:", formData.description.length, ")");
         promises.push(
           fetch("/api/translate", {
             method: "POST",
@@ -189,14 +219,16 @@ export default function ProductsPage() {
               text: formData.description,
               targetLang: "en",
             }),
-          }).then((res) => res.json())
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("描述翻译结果:", data.success ? "成功" : data.error);
+            return { field: "description", data };
+          })
         );
-      } else {
-        promises.push(Promise.resolve(null));
       }
 
-      // 翻译简短描述
-      if (formData.shortDesc && !formData.shortDescEn) {
+      if (formData.shortDesc) {
+        console.log("准备翻译简短描述:", formData.shortDesc);
         promises.push(
           fetch("/api/translate", {
             method: "POST",
@@ -205,24 +237,207 @@ export default function ProductsPage() {
               text: formData.shortDesc,
               targetLang: "en",
             }),
-          }).then((res) => res.json())
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("简短描述翻译结果:", data);
+            return { field: "shortDesc", data };
+          })
         );
-      } else {
-        promises.push(Promise.resolve(null));
       }
 
-      const [nameResult, descriptionResult, shortDescResult] = await Promise.all(promises);
+      if (formData.tag) {
+        console.log("准备翻译标签:", formData.tag);
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.tag,
+              targetLang: "en",
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("标签翻译结果:", data);
+            return { field: "tag", data };
+          })
+        );
+      }
+
+      if (formData.priceDisplay) {
+        console.log("准备翻译价格显示:", formData.priceDisplay);
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.priceDisplay,
+              targetLang: "en",
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("价格显示翻译结果:", data);
+            return { field: "priceDisplay", data };
+          })
+        );
+      }
+
+      // 翻译规格（specifications）
+      formData.specifications.forEach((spec, index) => {
+        if (spec.name) {
+          console.log(`准备翻译规格 ${index + 1} 名称:`, spec.name);
+          promises.push(
+            fetch("/api/translate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: spec.name, targetLang: "en" }),
+            }).then(async (res) => {
+              const data = await res.json();
+              console.log(`规格 ${index + 1} 名称翻译结果:`, data);
+              return { field: "specification", subfield: "name", index, data };
+            })
+          );
+        }
+
+        if (spec.value) {
+          console.log(`准备翻译规格 ${index + 1} 值:`, spec.value);
+          promises.push(
+            fetch("/api/translate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: spec.value, targetLang: "en" }),
+            }).then(async (res) => {
+              const data = await res.json();
+              console.log(`规格 ${index + 1} 值翻译结果:`, data);
+              return { field: "specification", subfield: "value", index, data };
+            })
+          );
+        }
+      });
+
+      // 翻译特性（features）
+      formData.features.forEach((feature, index) => {
+        if (feature.title) {
+          console.log(`准备翻译特性 ${index + 1} 标题:`, feature.title);
+          promises.push(
+            fetch("/api/translate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: feature.title, targetLang: "en" }),
+            }).then(async (res) => {
+              const data = await res.json();
+              console.log(`特性 ${index + 1} 标题翻译结果:`, data);
+              return { field: "feature", subfield: "title", index, data };
+            })
+          );
+        }
+
+        if (feature.description) {
+          console.log(`准备翻译特性 ${index + 1} 描述:`, feature.description);
+          promises.push(
+            fetch("/api/translate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: feature.description, targetLang: "en" }),
+            }).then(async (res) => {
+              const data = await res.json();
+              console.log(`特性 ${index + 1} 描述翻译结果:`, data);
+              return { field: "feature", subfield: "description", index, data };
+            })
+          );
+        }
+      });
+
+      console.log(`等待所有翻译完成... (共 ${promises.length} 个请求)`);
+      const results = await Promise.all(promises);
+      console.log("所有翻译完成:", results);
+
+      // 更新表单数据
+      const updates: Partial<ProductFormData> = {};
+      const newSpecifications = [...formData.specifications];
+      const newFeatures = [...formData.features];
+      let translatedCount = 0;
+      let failedFields: string[] = [];
+
+      results.forEach((result) => {
+        if (!result) return;
+
+        if (result.field === "specification") {
+          if (result.data?.success && result.data?.data?.translatedText) {
+            if (result.subfield === "name") {
+              newSpecifications[result.index].nameEn = result.data.data.translatedText;
+              translatedCount++;
+            } else if (result.subfield === "value") {
+              newSpecifications[result.index].valueEn = result.data.data.translatedText;
+              translatedCount++;
+            }
+          } else {
+            failedFields.push(`规格 ${result.index + 1} ${result.subfield === "name" ? "名称" : "值"}`);
+          }
+        } else if (result.field === "feature") {
+          if (result.data?.success && result.data?.data?.translatedText) {
+            if (result.subfield === "title") {
+              newFeatures[result.index].titleEn = result.data.data.translatedText;
+              translatedCount++;
+            } else if (result.subfield === "description") {
+              newFeatures[result.index].descriptionEn = result.data.data.translatedText;
+              translatedCount++;
+            }
+          } else {
+            failedFields.push(`特性 ${result.index + 1} ${result.subfield === "title" ? "标题" : "描述"}`);
+          }
+        } else {
+          // 基础字段
+          if (result.data?.success && result.data?.data?.translatedText) {
+            if (result.field === "name") {
+              updates.nameEn = result.data.data.translatedText;
+              translatedCount++;
+            } else if (result.field === "description") {
+              updates.descriptionEn = result.data.data.translatedText;
+              translatedCount++;
+            } else if (result.field === "shortDesc") {
+              updates.shortDescEn = result.data.data.translatedText;
+              translatedCount++;
+            } else if (result.field === "tag") {
+              updates.tagEn = result.data.data.translatedText;
+              translatedCount++;
+            } else if (result.field === "priceDisplay") {
+              updates.priceDisplayEn = result.data.data.translatedText;
+              translatedCount++;
+            }
+          } else {
+            const fieldNameMap: Record<string, string> = {
+              name: "名称",
+              description: "描述",
+              shortDesc: "简短描述",
+              tag: "标签",
+              priceDisplay: "价格显示"
+            };
+            failedFields.push(fieldNameMap[result.field] || result.field);
+          }
+        }
+      });
+
+      updates.specifications = newSpecifications;
+      updates.features = newFeatures;
 
       setFormData((prev) => ({
         ...prev,
-        nameEn: nameResult?.data?.translatedText || prev.nameEn,
-        descriptionEn:
-          descriptionResult?.data?.translatedText || prev.descriptionEn,
-        shortDescEn: shortDescResult?.data?.translatedText || prev.shortDescEn,
+        ...updates,
       }));
+
+      console.log("翻译完成，更新了", translatedCount, "个字段");
+
+      // 显示结果
+      if (translatedCount > 0 && failedFields.length === 0) {
+        alert(`翻译成功！已翻译 ${translatedCount} 个字段`);
+      } else if (translatedCount > 0 && failedFields.length > 0) {
+        alert(`部分翻译成功！已翻译 ${translatedCount} 个字段\n失败字段: ${failedFields.join(", ")}`);
+      } else {
+        alert("翻译失败，请检查网络连接或稍后重试");
+      }
     } catch (error) {
       console.error("翻译失败:", error);
-      alert("翻译失败，请重试");
+      alert("翻译失败，请重试\n错误: " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setTranslating(false);
     }
@@ -241,6 +456,11 @@ export default function ProductsPage() {
         descriptionEn: formData.descriptionEn || undefined,
         shortDesc: formData.shortDesc || undefined,
         shortDescEn: formData.shortDescEn || undefined,
+        tag: formData.tag || undefined,
+        tagEn: formData.tagEn || undefined,
+        priceDisplay: formData.priceDisplay || undefined,
+        priceDisplayEn: formData.priceDisplayEn || undefined,
+        rating: formData.rating ? parseFloat(formData.rating) : undefined,
         specifications: formData.specifications.length > 0 ? formData.specifications : undefined,
         features: formData.features.length > 0 ? formData.features : undefined,
         price: parseFloat(formData.price),
@@ -293,6 +513,11 @@ export default function ProductsPage() {
         descriptionEn: formData.descriptionEn || undefined,
         shortDesc: formData.shortDesc || undefined,
         shortDescEn: formData.shortDescEn || undefined,
+        tag: formData.tag || undefined,
+        tagEn: formData.tagEn || undefined,
+        priceDisplay: formData.priceDisplay || undefined,
+        priceDisplayEn: formData.priceDisplayEn || undefined,
+        rating: formData.rating ? parseFloat(formData.rating) : undefined,
         specifications: formData.specifications.length > 0 ? formData.specifications : undefined,
         features: formData.features.length > 0 ? formData.features : undefined,
         price: parseFloat(formData.price),
@@ -368,6 +593,11 @@ export default function ProductsPage() {
       descriptionEn: product.descriptionEn || "",
       shortDesc: product.shortDesc || "",
       shortDescEn: product.shortDescEn || "",
+      tag: product.tag || "",
+      tagEn: product.tagEn || "",
+      priceDisplay: product.priceDisplay || "",
+      priceDisplayEn: product.priceDisplayEn || "",
+      rating: product.rating?.toString() || "",
       specifications: (product.specifications as Specification[]) || [],
       features: (product.features as Feature[]) || [],
       price: product.price.toString(),
@@ -396,6 +626,11 @@ export default function ProductsPage() {
       descriptionEn: "",
       shortDesc: "",
       shortDescEn: "",
+      tag: "",
+      tagEn: "",
+      priceDisplay: "",
+      priceDisplayEn: "",
+      rating: "",
       specifications: [],
       features: [],
       price: "",
@@ -610,6 +845,72 @@ export default function ProductsPage() {
                       }
                       className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
                       placeholder="Short product description..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="create-tag">产品标签 (中文)</Label>
+                      <Input
+                        id="create-tag"
+                        value={formData.tag}
+                        onChange={(e) =>
+                          setFormData({ ...formData, tag: e.target.value })
+                        }
+                        placeholder="核心产品、热门产品等"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="create-tag-en">产品标签 (英文)</Label>
+                      <Input
+                        id="create-tag-en"
+                        value={formData.tagEn}
+                        onChange={(e) =>
+                          setFormData({ ...formData, tagEn: e.target.value })
+                        }
+                        placeholder="Core Product, Popular Product"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="create-price-display">价格显示 (中文)</Label>
+                      <Input
+                        id="create-price-display"
+                        value={formData.priceDisplay}
+                        onChange={(e) =>
+                          setFormData({ ...formData, priceDisplay: e.target.value })
+                        }
+                        placeholder="联系获取、面议等"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="create-price-display-en">价格显示 (英文)</Label>
+                      <Input
+                        id="create-price-display-en"
+                        value={formData.priceDisplayEn}
+                        onChange={(e) =>
+                          setFormData({ ...formData, priceDisplayEn: e.target.value })
+                        }
+                        placeholder="Contact us, Negotiable"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="create-rating">产品评分 (1.0-5.0)</Label>
+                    <Input
+                      id="create-rating"
+                      type="number"
+                      step="0.1"
+                      min="1"
+                      max="5"
+                      value={formData.rating}
+                      onChange={(e) =>
+                        setFormData({ ...formData, rating: e.target.value })
+                      }
+                      placeholder="5.0"
                     />
                   </div>
                 </div>
@@ -1153,6 +1454,72 @@ export default function ProductsPage() {
                     }
                     className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
                     placeholder="Short product description..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-tag">产品标签 (中文)</Label>
+                    <Input
+                      id="edit-tag"
+                      value={formData.tag}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tag: e.target.value })
+                      }
+                      placeholder="核心产品、热门产品等"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-tag-en">产品标签 (英文)</Label>
+                    <Input
+                      id="edit-tag-en"
+                      value={formData.tagEn}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tagEn: e.target.value })
+                      }
+                      placeholder="Core Product, Popular Product"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-price-display">价格显示 (中文)</Label>
+                    <Input
+                      id="edit-price-display"
+                      value={formData.priceDisplay}
+                      onChange={(e) =>
+                        setFormData({ ...formData, priceDisplay: e.target.value })
+                      }
+                      placeholder="联系获取、面议等"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-price-display-en">价格显示 (英文)</Label>
+                    <Input
+                      id="edit-price-display-en"
+                      value={formData.priceDisplayEn}
+                      onChange={(e) =>
+                        setFormData({ ...formData, priceDisplayEn: e.target.value })
+                      }
+                      placeholder="Contact us, Negotiable"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-rating">产品评分 (1.0-5.0)</Label>
+                  <Input
+                    id="edit-rating"
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    max="5"
+                    value={formData.rating}
+                    onChange={(e) =>
+                      setFormData({ ...formData, rating: e.target.value })
+                    }
+                    placeholder="5.0"
                   />
                 </div>
               </div>

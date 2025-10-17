@@ -12,6 +12,10 @@ const navigation = [
   { name: "文章管理", href: "/admin/posts", icon: "📝" },
   { name: "产品管理", href: "/admin/products", icon: "📦" },
   { name: "媒体库", href: "/admin/media", icon: "🖼️" },
+  { name: "留言管理", href: "/admin/contacts", icon: "💬" },
+  { name: "轮播图管理", href: "/admin/banners", icon: "🎨" },
+  { name: "解决方案管理", href: "/admin/solutions", icon: "💡" },
+  { name: "合作伙伴管理", href: "/admin/partners", icon: "🤝" },
 ];
 
 export default function AdminLayout({
