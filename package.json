@@ -3,14 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "npm run db:generate && next dev --turbopack",
+    "build": "npm run db:generate && next build --turbopack",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate",
+    "pm2:dev": "DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" pm2 start npm --name \"tx-website-dev\" -- run dev",
+    "pm2:build": "DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npm run build && pm2 start npm --name \"tx-website\" -- start",
+    "pm2:stop": "pm2 stop tx-website || pm2 stop tx-website-dev",
+    "pm2:restart": "pm2 restart tx-website || pm2 restart tx-website-dev",
+    "pm2:logs": "pm2 logs tx-website || pm2 logs tx-website-dev",
+    "pm2:delete": "pm2 delete tx-website || pm2 delete tx-website-dev"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
