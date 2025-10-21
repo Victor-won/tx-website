@@ -33,7 +33,7 @@ export const UpdateMediaFileSchema = MediaFileSchema.partial();
 
 // 批量上传Schema
 export const BatchUploadSchema = z.object({
-  files: z.array(z.instanceof(File)).min(1, "至少上传一个文件"),
+  files: z.array(z.any()).min(1, "至少上传一个文件"),
   folder: z.string().optional(),
 });
 
