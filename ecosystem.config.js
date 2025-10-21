@@ -2,9 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'tx-website',
-      script: 'bash',
-      args: ['-c', 'npm start'],
-      cwd: '/Users/angck/tx-website',
+      script: '/usr/lib/node',
+      args: './node_modules/next/dist/bin/next start',
+      cwd: './',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
