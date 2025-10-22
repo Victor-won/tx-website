@@ -239,6 +239,40 @@ export default function PostsPage() {
     }
   };
 
+  const handleCopyPost = async (post: Post) => {
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `${post.title} (副本)`,
+          titleEn: post.titleEn ? `${post.titleEn} (Copy)` : "",
+          slug: `${post.slug}-copy-${Date.now()}`,
+          content: post.content,
+          contentEn: post.contentEn || "",
+          excerpt: post.excerpt || "",
+          excerptEn: post.excerptEn || "",
+          featuredImage: post.featuredImage || "",
+          status: "DRAFT",
+          categoryId: post.categoryId || undefined,
+          authorId: session?.user?.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("文章复制成功！");
+        fetchPosts();
+      } else {
+        alert(data.error || "复制文章失败");
+      }
+    } catch (error) {
+      console.error("复制文章失败:", error);
+      alert("复制文章失败");
+    }
+  };
+
   const openEditDialog = (post: Post) => {
     setCurrentPost(post);
     setFormData({
@@ -849,6 +883,12 @@ export default function PostsPage() {
                       className="text-blue-600 hover:text-blue-900 mr-4"
                     >
                       编辑
+                    </button>
+                    <button
+                      onClick={() => handleCopyPost(post)}
+                      className="text-green-600 hover:text-green-900 mr-4"
+                    >
+                      复制
                     </button>
                     <button
                       onClick={() => openDeleteDialog(post)}

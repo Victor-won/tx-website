@@ -588,6 +588,55 @@ export default function ProductsPage() {
     }
   };
 
+  const handleCopyProduct = async (product: Product) => {
+    try {
+      const payload = {
+        name: `${product.name} (副本)`,
+        nameEn: product.nameEn ? `${product.nameEn} (Copy)` : undefined,
+        slug: `${product.slug}-copy-${Date.now()}`,
+        description: product.description,
+        descriptionEn: product.descriptionEn || undefined,
+        shortDesc: product.shortDesc || undefined,
+        shortDescEn: product.shortDescEn || undefined,
+        tag: product.tag || undefined,
+        tagEn: product.tagEn || undefined,
+        priceDisplay: product.priceDisplay || undefined,
+        priceDisplayEn: product.priceDisplayEn || undefined,
+        rating: product.rating || undefined,
+        specifications: product.specifications || undefined,
+        features: product.features || undefined,
+        price: product.price,
+        salePrice: product.salePrice || undefined,
+        sku: `${product.sku}-COPY-${Date.now()}`,
+        stock: product.stock,
+        status: "INACTIVE",
+        featuredImage: product.featuredImage || undefined,
+        images: product.images || undefined,
+        categoryId: product.categoryId || null,
+      };
+
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("产品复制成功！");
+        fetchProducts();
+      } else {
+        alert(data.error || "复制产品失败");
+      }
+    } catch (error) {
+      console.error("复制产品失败:", error);
+      alert("复制产品失败");
+    }
+  };
+
   const openEditDialog = (product: Product) => {
     setSelectedProduct(product);
     setFormData({
@@ -1299,6 +1348,12 @@ export default function ProductsPage() {
                     className="text-blue-600 hover:text-blue-900 mr-4"
                   >
                     编辑
+                  </button>
+                  <button
+                    onClick={() => handleCopyProduct(product)}
+                    className="text-green-600 hover:text-green-900 mr-4"
+                  >
+                    复制
                   </button>
                   <button
                     onClick={() => openDeleteDialog(product)}
