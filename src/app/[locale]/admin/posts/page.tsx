@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +65,8 @@ interface FormData {
 export default function PostsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) || "zh";
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -271,6 +273,10 @@ export default function PostsPage() {
       console.error("复制文章失败:", error);
       alert("复制文章失败");
     }
+  };
+
+  const handleViewPost = (slug: string) => {
+    window.open(`/${locale}/posts/${slug}`, "_blank");
   };
 
   const openEditDialog = (post: Post) => {
@@ -878,6 +884,13 @@ export default function PostsPage() {
                     {new Date(post.createdAt).toLocaleDateString("zh-CN")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
+                      onClick={() => handleViewPost(post.slug)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      title="在新标签页中查看前台详情页"
+                    >
+                      查看
+                    </button>
                     <button
                       onClick={() => openEditDialog(post)}
                       className="text-blue-600 hover:text-blue-900 mr-4"

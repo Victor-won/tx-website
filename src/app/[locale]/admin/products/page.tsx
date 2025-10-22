@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,6 +86,8 @@ interface ProductFormData {
 }
 
 export default function ProductsPage() {
+  const params = useParams();
+  const locale = (params?.locale as string) || "zh";
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -635,6 +638,10 @@ export default function ProductsPage() {
       console.error("复制产品失败:", error);
       alert("复制产品失败");
     }
+  };
+
+  const handleViewProduct = (slug: string) => {
+    window.open(`/${locale}/products/${slug}`, "_blank");
   };
 
   const openEditDialog = (product: Product) => {
@@ -1343,6 +1350,13 @@ export default function ProductsPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button
+                    onClick={() => handleViewProduct(product.slug)}
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    title="在新标签页中查看前台详情页"
+                  >
+                    查看
+                  </button>
                   <button
                     onClick={() => openEditDialog(product)}
                     className="text-blue-600 hover:text-blue-900 mr-4"
