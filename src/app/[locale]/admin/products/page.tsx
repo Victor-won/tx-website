@@ -125,6 +125,14 @@ export default function ProductsPage() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [formErrors, setFormErrors] = useState<{
+    name?: string;
+    slug?: string;
+    description?: string;
+    price?: string;
+    sku?: string;
+    stock?: string;
+  }>({});
 
   useEffect(() => {
     fetchProducts();
@@ -177,6 +185,52 @@ export default function ProductsPage() {
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^\w\-\u4e00-\u9fa5]+/g, "");
+  };
+
+  const validateForm = (): boolean => {
+    const errors: {
+      name?: string;
+      slug?: string;
+      description?: string;
+      price?: string;
+      sku?: string;
+      stock?: string;
+    } = {};
+
+    // 验证必填字段
+    if (!formData.name.trim()) {
+      errors.name = "产品名称(中文)不能为空";
+    }
+
+    if (!formData.slug.trim()) {
+      errors.slug = "Slug不能为空";
+    }
+
+    if (!formData.description.trim()) {
+      errors.description = "产品描述(中文)不能为空";
+    }
+
+    if (!formData.sku.trim()) {
+      errors.sku = "SKU不能为空";
+    }
+
+    if (!formData.price || parseFloat(formData.price) < 0) {
+      errors.price = "价格必须大于等于0";
+    }
+
+    if (!formData.stock || parseInt(formData.stock) < 0) {
+      errors.stock = "库存必须大于等于0";
+    }
+
+    setFormErrors(errors);
+
+    // 如果有错误，返回 false
+    if (Object.keys(errors).length > 0) {
+      alert("请填写所有必填字段并确保数据有效");
+      return false;
+    }
+
+    return true;
   };
 
   const handleAutoTranslate = async () => {
@@ -453,6 +507,12 @@ export default function ProductsPage() {
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 验证表单
+    if (!validateForm()) {
+      return;
+    }
+
     setFormLoading(true);
 
     try {
@@ -509,6 +569,11 @@ export default function ProductsPage() {
   const handleEditProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
+
+    // 验证表单
+    if (!validateForm()) {
+      return;
+    }
 
     setFormLoading(true);
 
@@ -703,6 +768,7 @@ export default function ProductsPage() {
       images: [],
       categoryId: "",
     });
+    setFormErrors({});
   };
 
   const addSpecification = () => {
@@ -774,1148 +840,1078 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* 页面标题 */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">产品管理</h1>
-          <p className="mt-1 text-sm text-gray-500">共 {total} 个产品</p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>+ 新建产品</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle>创建产品</DialogTitle>
-              <DialogDescription>填写以下信息创建新产品</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateProduct} className="flex flex-col flex-1 overflow-hidden">
-              <div className="space-y-6 py-4 px-6 overflow-y-auto flex-1">
-                {/* 翻译按钮 */}
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    onClick={handleAutoTranslate}
-                    disabled={translating || formLoading}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    size="sm"
-                  >
-                    {translating ? "翻译中..." : "🌐 自动翻译为英文"}
-                  </Button>
-                </div>
-
-                {/* 基本信息 */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">基本信息</h3>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="create-name">产品名称 (中文) *</Label>
-                      <Input
-                        id="create-name"
-                        value={formData.name}
-                        onChange={(e) => {
-                          const name = e.target.value;
-                          setFormData({
-                            ...formData,
-                            name,
-                            slug: generateSlug(name),
-                          });
-                        }}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="create-name-en">产品名称 (英文)</Label>
-                      <Input
-                        id="create-name-en"
-                        value={formData.nameEn}
-                        onChange={(e) =>
-                          setFormData({ ...formData, nameEn: e.target.value })
-                        }
-                        placeholder="Product Name"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create-slug">Slug *</Label>
-                    <Input
-                      id="create-slug"
-                      value={formData.slug}
-                      onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="create-sku">SKU *</Label>
-                      <Input
-                        id="create-sku"
-                        value={formData.sku}
-                        onChange={(e) =>
-                          setFormData({ ...formData, sku: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="create-category">分类</Label>
-                      <select
-                        id="create-category"
-                        value={formData.categoryId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, categoryId: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      >
-                        <option value="">无分类</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create-short-desc">简短描述 (中文)</Label>
-                    <textarea
-                      id="create-short-desc"
-                      value={formData.shortDesc}
-                      onChange={(e) =>
-                        setFormData({ ...formData, shortDesc: e.target.value })
-                      }
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                      placeholder="简短的产品描述..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create-short-desc-en">简短描述 (英文)</Label>
-                    <textarea
-                      id="create-short-desc-en"
-                      value={formData.shortDescEn}
-                      onChange={(e) =>
-                        setFormData({ ...formData, shortDescEn: e.target.value })
-                      }
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                      placeholder="Short product description..."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="create-tag">产品标签 (中文)</Label>
-                      <Input
-                        id="create-tag"
-                        value={formData.tag}
-                        onChange={(e) =>
-                          setFormData({ ...formData, tag: e.target.value })
-                        }
-                        placeholder="核心产品、热门产品等"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="create-tag-en">产品标签 (英文)</Label>
-                      <Input
-                        id="create-tag-en"
-                        value={formData.tagEn}
-                        onChange={(e) =>
-                          setFormData({ ...formData, tagEn: e.target.value })
-                        }
-                        placeholder="Core Product, Popular Product"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="create-price-display">价格显示 (中文)</Label>
-                      <Input
-                        id="create-price-display"
-                        value={formData.priceDisplay}
-                        onChange={(e) =>
-                          setFormData({ ...formData, priceDisplay: e.target.value })
-                        }
-                        placeholder="联系获取、面议等"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="create-price-display-en">价格显示 (英文)</Label>
-                      <Input
-                        id="create-price-display-en"
-                        value={formData.priceDisplayEn}
-                        onChange={(e) =>
-                          setFormData({ ...formData, priceDisplayEn: e.target.value })
-                        }
-                        placeholder="Contact us, Negotiable"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create-rating">产品评分 (1.0-5.0)</Label>
-                    <Input
-                      id="create-rating"
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      max="5"
-                      value={formData.rating}
-                      onChange={(e) =>
-                        setFormData({ ...formData, rating: e.target.value })
-                      }
-                      placeholder="5.0"
-                    />
-                  </div>
-                </div>
-
-                {/* 详细描述 */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">详细描述</h3>
-
-                  <div className="space-y-2">
-                    <Label>产品描述 (中文) *</Label>
-                    <RichTextEditor
-                      value={formData.description}
-                      onChange={(value) =>
-                        setFormData({ ...formData, description: value })
-                      }
-                      placeholder="产品详细描述..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>产品描述 (英文)</Label>
-                    <RichTextEditor
-                      value={formData.descriptionEn}
-                      onChange={(value) =>
-                        setFormData({ ...formData, descriptionEn: value })
-                      }
-                      placeholder="Product description..."
-                    />
-                  </div>
-                </div>
-
-                {/* 价格和库存 */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">价格和库存</h3>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="create-price">价格 (¥) *</Label>
-                      <Input
-                        id="create-price"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.price}
-                        onChange={(e) =>
-                          setFormData({ ...formData, price: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="create-sale-price">促销价 (¥)</Label>
-                      <Input
-                        id="create-sale-price"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.salePrice}
-                        onChange={(e) =>
-                          setFormData({ ...formData, salePrice: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="create-stock">库存 *</Label>
-                      <Input
-                        id="create-stock"
-                        type="number"
-                        min="0"
-                        value={formData.stock}
-                        onChange={(e) =>
-                          setFormData({ ...formData, stock: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create-status">状态 *</Label>
-                    <select
-                      id="create-status"
-                      value={formData.status}
-                      onChange={(e) =>
-                        setFormData({ ...formData, status: e.target.value })
-                      }
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    >
-                      <option value="ACTIVE">正常</option>
-                      <option value="INACTIVE">下架</option>
-                      <option value="OUT_OF_STOCK">缺货</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* 产品图片 */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">产品图片</h3>
-
-                  <div className="space-y-2">
-                    <Label>封面图片</Label>
-                    <ImageUpload
-                      value={formData.featuredImage}
-                      onChange={(url) =>
-                        setFormData({ ...formData, featuredImage: url })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>产品图片库</Label>
-                    <div className="grid grid-cols-4 gap-4">
-                      {formData.images.map((image, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={image}
-                            alt={`产品图片 ${index + 1}`}
-                            className="w-full h-32 object-cover rounded border"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      <ImageUpload
-                        value=""
-                        onChange={(url) => addImage(url)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 产品规格 */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">产品规格</h3>
-                    <Button
-                      type="button"
-                      onClick={addSpecification}
-                      size="sm"
-                      variant="outline"
-                    >
-                      + 添加规格
-                    </Button>
-                  </div>
-
-                  {formData.specifications.map((spec, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">规格 {index + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeSpecification(index)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          删除
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="规格名 (中文)"
-                          value={spec.name}
-                          onChange={(e) =>
-                            updateSpecification(index, "name", e.target.value)
-                          }
-                        />
-                        <Input
-                          placeholder="规格名 (英文)"
-                          value={spec.nameEn || ""}
-                          onChange={(e) =>
-                            updateSpecification(index, "nameEn", e.target.value)
-                          }
-                        />
-                        <Input
-                          placeholder="规格值 (中文)"
-                          value={spec.value}
-                          onChange={(e) =>
-                            updateSpecification(index, "value", e.target.value)
-                          }
-                        />
-                        <Input
-                          placeholder="规格值 (英文)"
-                          value={spec.valueEn || ""}
-                          onChange={(e) =>
-                            updateSpecification(index, "valueEn", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 产品特性 */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">产品特性</h3>
-                    <Button
-                      type="button"
-                      onClick={addFeature}
-                      size="sm"
-                      variant="outline"
-                    >
-                      + 添加特性
-                    </Button>
-                  </div>
-
-                  {formData.features.map((feature, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">特性 {index + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeFeature(index)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          删除
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="特性标题 (中文)"
-                          value={feature.title}
-                          onChange={(e) =>
-                            updateFeature(index, "title", e.target.value)
-                          }
-                        />
-                        <Input
-                          placeholder="特性标题 (英文)"
-                          value={feature.titleEn || ""}
-                          onChange={(e) =>
-                            updateFeature(index, "titleEn", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <textarea
-                          placeholder="特性描述 (中文)"
-                          value={feature.description}
-                          onChange={(e) =>
-                            updateFeature(index, "description", e.target.value)
-                          }
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                        />
-                        <textarea
-                          placeholder="特性描述 (英文)"
-                          value={feature.descriptionEn || ""}
-                          onChange={(e) =>
-                            updateFeature(index, "descriptionEn", e.target.value)
-                          }
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                        />
-                      </div>
-                      <Input
-                        placeholder="图标 (可选)"
-                        value={feature.icon || ""}
-                        onChange={(e) =>
-                          updateFeature(index, "icon", e.target.value)
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
+      <div className="space-y-6">
+          {/* 页面标题 */}
+          <div className="flex justify-between items-center">
+              <div>
+                  <h1 className="text-2xl font-bold text-gray-900">产品管理</h1>
+                  <p className="mt-1 text-sm text-gray-500">共 {total} 个产品</p>
               </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsCreateDialogOpen(false);
-                    resetForm();
-                  }}
-                  disabled={formLoading}
-                >
-                  取消
-                </Button>
-                <Button type="submit" disabled={formLoading}>
-                  {formLoading ? "创建中..." : "创建"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                      <Button onClick={resetForm}>+ 新建产品</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh]">
+                      <DialogHeader>
+                          <DialogTitle>创建产品</DialogTitle>
+                          <DialogDescription>填写以下信息创建新产品</DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateProduct} className="flex flex-col flex-1 overflow-hidden">
+                          <div className="space-y-6 py-4 px-6 overflow-y-auto flex-1">
+                              {/* 翻译按钮 */}
+                              <div className="flex justify-end">
+                                  <Button
+                                      type="button"
+                                      onClick={handleAutoTranslate}
+                                      disabled={translating || formLoading}
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                      size="sm"
+                                  >
+                                      {translating ? '翻译中...' : '🌐 自动翻译为英文'}
+                                  </Button>
+                              </div>
 
-      {/* 搜索框 */}
-      <div className="flex gap-4">
-        <Input
-          type="text"
-          placeholder="搜索产品 (名称或SKU)"
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="max-w-md"
-        />
-      </div>
+                              {/* 基本信息 */}
+                              <div className="space-y-4">
+                                  <h3 className="text-lg font-medium">基本信息</h3>
 
-      {/* 产品表格 */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                产品
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                SKU / 分类
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                价格
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                库存
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                状态
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    {product.featuredImage && (
-                      <img
-                        src={product.featuredImage}
-                        alt={product.name}
-                        className="w-10 h-10 rounded-md object-cover mr-3"
-                      />
-                    )}
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {product.name}
-                      </div>
-                      <div className="text-sm text-gray-500">{product.slug}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{product.sku}</div>
-                  <div className="text-sm text-gray-500">
-                    {product.category?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">¥{product.price}</div>
-                  {product.salePrice && (
-                    <div className="text-sm text-red-600">¥{product.salePrice}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {product.stock}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      product.status === "ACTIVE"
-                        ? "bg-green-100 text-green-800"
-                        : product.status === "INACTIVE"
-                          ? "bg-gray-100 text-gray-800"
-                          : "bg-red-100 text-red-800"
-                    }`}
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-name">
+                                              产品名称 (中文) <span className="text-red-600">*</span>
+                                          </Label>
+                                          <Input
+                                              id="create-name"
+                                              value={formData.name}
+                                              onChange={(e) => {
+                                                  const name = e.target.value;
+                                                  setFormData({
+                                                      ...formData,
+                                                      name,
+                                                      slug: generateSlug(name),
+                                                  });
+                                              }}
+                                              required
+                                              className={formErrors.name ? 'border-red-500' : ''}
+                                          />
+                                          {formErrors.name && (
+                                              <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                                          )}
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-name-en">产品名称 (英文)</Label>
+                                          <Input
+                                              id="create-name-en"
+                                              value={formData.nameEn}
+                                              onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
+                                              placeholder="Product Name"
+                                          />
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label htmlFor="create-slug">
+                                          Slug <span className="text-red-600">*</span>
+                                      </Label>
+                                      <Input
+                                          id="create-slug"
+                                          value={formData.slug}
+                                          onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                          required
+                                          className={formErrors.slug ? 'border-red-500' : ''}
+                                      />
+                                      {formErrors.slug && (
+                                          <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>
+                                      )}
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-sku">
+                                              SKU <span className="text-red-600">*</span>
+                                          </Label>
+                                          <Input
+                                              id="create-sku"
+                                              value={formData.sku}
+                                              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                              required
+                                              className={formErrors.sku ? 'border-red-500' : ''}
+                                          />
+                                          {formErrors.sku && (
+                                              <p className="text-red-500 text-sm mt-1">{formErrors.sku}</p>
+                                          )}
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-category">分类</Label>
+                                          <select
+                                              id="create-category"
+                                              value={formData.categoryId}
+                                              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                              className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                          >
+                                              <option value="">无分类</option>
+                                              {categories.map((cat) => (
+                                                  <option key={cat.id} value={cat.id}>
+                                                      {cat.name}
+                                                  </option>
+                                              ))}
+                                          </select>
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label htmlFor="create-short-desc">简短描述 (中文)</Label>
+                                      <textarea
+                                          id="create-short-desc"
+                                          value={formData.shortDesc}
+                                          onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })}
+                                          className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                          placeholder="简短的产品描述..."
+                                      />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label htmlFor="create-short-desc-en">简短描述 (英文)</Label>
+                                      <textarea
+                                          id="create-short-desc-en"
+                                          value={formData.shortDescEn}
+                                          onChange={(e) => setFormData({ ...formData, shortDescEn: e.target.value })}
+                                          className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                          placeholder="Short product description..."
+                                      />
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-tag">产品标签 (中文)</Label>
+                                          <Input
+                                              id="create-tag"
+                                              value={formData.tag}
+                                              onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                                              placeholder="核心产品、热门产品等"
+                                          />
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-tag-en">产品标签 (英文)</Label>
+                                          <Input
+                                              id="create-tag-en"
+                                              value={formData.tagEn}
+                                              onChange={(e) => setFormData({ ...formData, tagEn: e.target.value })}
+                                              placeholder="Core Product, Popular Product"
+                                          />
+                                      </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-price-display">价格显示 (中文)</Label>
+                                          <Input
+                                              id="create-price-display"
+                                              value={formData.priceDisplay}
+                                              onChange={(e) =>
+                                                  setFormData({ ...formData, priceDisplay: e.target.value })
+                                              }
+                                              placeholder="联系获取、面议等"
+                                          />
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-price-display-en">价格显示 (英文)</Label>
+                                          <Input
+                                              id="create-price-display-en"
+                                              value={formData.priceDisplayEn}
+                                              onChange={(e) =>
+                                                  setFormData({ ...formData, priceDisplayEn: e.target.value })
+                                              }
+                                              placeholder="Contact us, Negotiable"
+                                          />
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label htmlFor="create-rating">产品评分 (1.0-5.0)</Label>
+                                      <Input
+                                          id="create-rating"
+                                          type="number"
+                                          step="0.1"
+                                          min="1"
+                                          max="5"
+                                          value={formData.rating}
+                                          onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+                                          placeholder="5.0"
+                                      />
+                                  </div>
+                              </div>
+
+                              {/* 详细描述 */}
+                              <div className="space-y-4">
+                                  <h3 className="text-lg font-medium">详细描述</h3>
+
+                                  <div className="space-y-2">
+                                      <Label>
+                                          产品描述 (中文) <span className="text-red-600">*</span>
+                                      </Label>
+                                      <RichTextEditor
+                                          value={formData.description}
+                                          onChange={(value) => setFormData({ ...formData, description: value })}
+                                          placeholder="产品详细描述..."
+                                      />
+                                      {formErrors.description && (
+                                          <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
+                                      )}
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label>产品描述 (英文)</Label>
+                                      <RichTextEditor
+                                          value={formData.descriptionEn}
+                                          onChange={(value) => setFormData({ ...formData, descriptionEn: value })}
+                                          placeholder="Product description..."
+                                      />
+                                  </div>
+                              </div>
+
+                              {/* 价格和库存 */}
+                              <div className="space-y-4">
+                                  <h3 className="text-lg font-medium">价格和库存</h3>
+
+                                  <div className="grid grid-cols-3 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-price">
+                                              价格 (¥) <span className="text-red-600">*</span>
+                                          </Label>
+                                          <Input
+                                              id="create-price"
+                                              type="number"
+                                              step="0.01"
+                                              min="0"
+                                              value={formData.price}
+                                              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                              required
+                                              className={formErrors.price ? 'border-red-500' : ''}
+                                          />
+                                          {formErrors.price && (
+                                              <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>
+                                          )}
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-sale-price">促销价 (¥)</Label>
+                                          <Input
+                                              id="create-sale-price"
+                                              type="number"
+                                              step="0.01"
+                                              min="0"
+                                              value={formData.salePrice}
+                                              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                                          />
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="create-stock">
+                                              库存 <span className="text-red-600">*</span>
+                                          </Label>
+                                          <Input
+                                              id="create-stock"
+                                              type="number"
+                                              min="0"
+                                              value={formData.stock}
+                                              onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                                              required
+                                              className={formErrors.stock ? 'border-red-500' : ''}
+                                          />
+                                          {formErrors.stock && (
+                                              <p className="text-red-500 text-sm mt-1">{formErrors.stock}</p>
+                                          )}
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label htmlFor="create-status">
+                                          状态 <span className="text-red-600">*</span>
+                                      </Label>
+                                      <select
+                                          id="create-status"
+                                          value={formData.status}
+                                          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                          required
+                                      >
+                                          <option value="ACTIVE">正常</option>
+                                          <option value="INACTIVE">下架</option>
+                                          <option value="OUT_OF_STOCK">缺货</option>
+                                      </select>
+                                  </div>
+                              </div>
+
+                              {/* 产品图片 */}
+                              <div className="space-y-4">
+                                  <h3 className="text-lg font-medium">产品图片</h3>
+
+                                  <div className="space-y-2">
+                                      <Label>封面图片</Label>
+                                      <ImageUpload
+                                          value={formData.featuredImage}
+                                          onChange={(url) => setFormData({ ...formData, featuredImage: url })}
+                                      />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                      <Label>产品图片库</Label>
+                                      <div className="grid grid-cols-4 gap-4">
+                                          {formData.images.map((image, index) => (
+                                              <div key={index} className="relative">
+                                                  <img
+                                                      src={image}
+                                                      alt={`产品图片 ${index + 1}`}
+                                                      className="w-full h-32 object-cover rounded border"
+                                                  />
+                                                  <button
+                                                      type="button"
+                                                      onClick={() => removeImage(index)}
+                                                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                                  >
+                                                      ×
+                                                  </button>
+                                              </div>
+                                          ))}
+                                          <ImageUpload value="" onChange={(url) => addImage(url)} />
+                                      </div>
+                                  </div>
+                              </div>
+
+                              {/* 产品规格 */}
+                              <div className="space-y-4">
+                                  <div className="flex justify-between items-center">
+                                      <h3 className="text-lg font-medium">产品规格</h3>
+                                      <Button type="button" onClick={addSpecification} size="sm" variant="outline">
+                                          + 添加规格
+                                      </Button>
+                                  </div>
+
+                                  {formData.specifications.map((spec, index) => (
+                                      <div key={index} className="border rounded-lg p-4 space-y-2">
+                                          <div className="flex justify-between items-center">
+                                              <span className="text-sm font-medium">规格 {index + 1}</span>
+                                              <button
+                                                  type="button"
+                                                  onClick={() => removeSpecification(index)}
+                                                  className="text-red-600 hover:text-red-800 text-sm"
+                                              >
+                                                  删除
+                                              </button>
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              <Input
+                                                  placeholder="规格名 (中文)"
+                                                  value={spec.name}
+                                                  onChange={(e) => updateSpecification(index, 'name', e.target.value)}
+                                              />
+                                              <Input
+                                                  placeholder="规格名 (英文)"
+                                                  value={spec.nameEn || ''}
+                                                  onChange={(e) => updateSpecification(index, 'nameEn', e.target.value)}
+                                              />
+                                              <Input
+                                                  placeholder="规格值 (中文)"
+                                                  value={spec.value}
+                                                  onChange={(e) => updateSpecification(index, 'value', e.target.value)}
+                                              />
+                                              <Input
+                                                  placeholder="规格值 (英文)"
+                                                  value={spec.valueEn || ''}
+                                                  onChange={(e) =>
+                                                      updateSpecification(index, 'valueEn', e.target.value)
+                                                  }
+                                              />
+                                          </div>
+                                      </div>
+                                  ))}
+                              </div>
+
+                              {/* 产品特性 */}
+                              <div className="space-y-4">
+                                  <div className="flex justify-between items-center">
+                                      <h3 className="text-lg font-medium">产品特性</h3>
+                                      <Button type="button" onClick={addFeature} size="sm" variant="outline">
+                                          + 添加特性
+                                      </Button>
+                                  </div>
+
+                                  {formData.features.map((feature, index) => (
+                                      <div key={index} className="border rounded-lg p-4 space-y-2">
+                                          <div className="flex justify-between items-center">
+                                              <span className="text-sm font-medium">特性 {index + 1}</span>
+                                              <button
+                                                  type="button"
+                                                  onClick={() => removeFeature(index)}
+                                                  className="text-red-600 hover:text-red-800 text-sm"
+                                              >
+                                                  删除
+                                              </button>
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              <Input
+                                                  placeholder="特性标题 (中文)"
+                                                  value={feature.title}
+                                                  onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                                              />
+                                              <Input
+                                                  placeholder="特性标题 (英文)"
+                                                  value={feature.titleEn || ''}
+                                                  onChange={(e) => updateFeature(index, 'titleEn', e.target.value)}
+                                              />
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              <textarea
+                                                  placeholder="特性描述 (中文)"
+                                                  value={feature.description}
+                                                  onChange={(e) => updateFeature(index, 'description', e.target.value)}
+                                                  className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                              />
+                                              <textarea
+                                                  placeholder="特性描述 (英文)"
+                                                  value={feature.descriptionEn || ''}
+                                                  onChange={(e) =>
+                                                      updateFeature(index, 'descriptionEn', e.target.value)
+                                                  }
+                                                  className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                              />
+                                          </div>
+                                          <Input
+                                              placeholder="图标 (可选)"
+                                              value={feature.icon || ''}
+                                              onChange={(e) => updateFeature(index, 'icon', e.target.value)}
+                                          />
+                                      </div>
+                                  ))}
+                              </div>
+                          </div>
+                          <DialogFooter>
+                              <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => {
+                                      setIsCreateDialogOpen(false);
+                                      resetForm();
+                                  }}
+                                  disabled={formLoading}
+                              >
+                                  取消
+                              </Button>
+                              <Button type="submit" disabled={formLoading}>
+                                  {formLoading ? '创建中...' : '创建'}
+                              </Button>
+                          </DialogFooter>
+                      </form>
+                  </DialogContent>
+              </Dialog>
+          </div>
+
+          {/* 搜索框 */}
+          <div className="flex gap-4">
+              <Input
+                  type="text"
+                  placeholder="搜索产品 (名称或SKU)"
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="max-w-md"
+              />
+          </div>
+
+          {/* 产品表格 */}
+          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                      <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              产品
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              SKU / 分类
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              价格
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              库存
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              状态
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              操作
+                          </th>
+                      </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                      {products.map((product) => (
+                          <tr key={product.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                      {product.featuredImage && (
+                                          <img
+                                              src={product.featuredImage}
+                                              alt={product.name}
+                                              className="w-10 h-10 rounded-md object-cover mr-3"
+                                          />
+                                      )}
+                                      <div>
+                                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                                          <div className="text-sm text-gray-500">{product.slug}</div>
+                                      </div>
+                                  </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">{product.sku}</div>
+                                  <div className="text-sm text-gray-500">{product.category?.name || '-'}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">¥{product.price}</div>
+                                  {product.salePrice && (
+                                      <div className="text-sm text-red-600">¥{product.salePrice}</div>
+                                  )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                  <span
+                                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                          product.status === 'ACTIVE'
+                                              ? 'bg-green-100 text-green-800'
+                                              : product.status === 'INACTIVE'
+                                              ? 'bg-gray-100 text-gray-800'
+                                              : 'bg-red-100 text-red-800'
+                                      }`}
+                                  >
+                                      {product.status === 'ACTIVE'
+                                          ? '正常'
+                                          : product.status === 'INACTIVE'
+                                          ? '下架'
+                                          : '缺货'}
+                                  </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                  <button
+                                      onClick={() => handleViewProduct(product.slug)}
+                                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                      title="在新标签页中查看前台详情页"
+                                  >
+                                      查看
+                                  </button>
+                                  <button
+                                      onClick={() => openEditDialog(product)}
+                                      className="text-blue-600 hover:text-blue-900 mr-4"
+                                  >
+                                      编辑
+                                  </button>
+                                  <button
+                                      onClick={() => handleCopyProduct(product)}
+                                      className="text-green-600 hover:text-green-900 mr-4"
+                                  >
+                                      复制
+                                  </button>
+                                  <button
+                                      onClick={() => openDeleteDialog(product)}
+                                      className="text-red-600 hover:text-red-900"
+                                  >
+                                      删除
+                                  </button>
+                              </td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
+          </div>
+
+          {/* 分页 */}
+          {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-2">
+                  <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
                   >
-                    {product.status === "ACTIVE"
-                      ? "正常"
-                      : product.status === "INACTIVE"
-                        ? "下架"
-                        : "缺货"}
+                      上一页
+                  </Button>
+                  <span className="text-sm text-gray-700">
+                      第 {currentPage} / {totalPages} 页
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => handleViewProduct(product.slug)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    title="在新标签页中查看前台详情页"
+                  <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
                   >
-                    查看
-                  </button>
-                  <button
-                    onClick={() => openEditDialog(product)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    编辑
-                  </button>
-                  <button
-                    onClick={() => handleCopyProduct(product)}
-                    className="text-green-600 hover:text-green-900 mr-4"
-                  >
-                    复制
-                  </button>
-                  <button
-                    onClick={() => openDeleteDialog(product)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    删除
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 分页 */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            上一页
-          </Button>
-          <span className="text-sm text-gray-700">
-            第 {currentPage} / {totalPages} 页
-          </span>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            下一页
-          </Button>
-        </div>
-      )}
-
-      {/* 编辑对话框 */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>编辑产品</DialogTitle>
-            <DialogDescription>修改产品信息</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleEditProduct} className="flex flex-col flex-1 overflow-hidden">
-            <div className="space-y-6 py-4 px-6 overflow-y-auto flex-1">
-              {/* 翻译按钮 */}
-              <div className="flex justify-end">
-                <Button
-                  type="button"
-                  onClick={handleAutoTranslate}
-                  disabled={translating || formLoading}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  {translating ? "翻译中..." : "🌐 自动翻译为英文"}
-                </Button>
+                      下一页
+                  </Button>
               </div>
+          )}
 
-              {/* 基本信息 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">基本信息</h3>
+          {/* 编辑对话框 */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh]">
+                  <DialogHeader>
+                      <DialogTitle>编辑产品</DialogTitle>
+                      <DialogDescription>修改产品信息</DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleEditProduct} className="flex flex-col flex-1 overflow-hidden">
+                      <div className="space-y-6 py-4 px-6 overflow-y-auto flex-1">
+                          {/* 翻译按钮 */}
+                          <div className="flex justify-end">
+                              <Button
+                                  type="button"
+                                  onClick={handleAutoTranslate}
+                                  disabled={translating || formLoading}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  size="sm"
+                              >
+                                  {translating ? '翻译中...' : '🌐 自动翻译为英文'}
+                              </Button>
+                          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name">产品名称 (中文) *</Label>
-                    <Input
-                      id="edit-name"
-                      value={formData.name}
-                      onChange={(e) => {
-                        const name = e.target.value;
-                        setFormData({
-                          ...formData,
-                          name,
-                          slug: generateSlug(name),
-                        });
-                      }}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name-en">产品名称 (英文)</Label>
-                    <Input
-                      id="edit-name-en"
-                      value={formData.nameEn}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nameEn: e.target.value })
-                      }
-                      placeholder="Product Name"
-                    />
-                  </div>
-                </div>
+                          {/* 基本信息 */}
+                          <div className="space-y-4">
+                              <h3 className="text-lg font-medium">基本信息</h3>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-slug">Slug *</Label>
-                  <Input
-                    id="edit-slug"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-name">
+                                          产品名称 (中文) <span className="text-red-600">*</span>
+                                      </Label>
+                                      <Input
+                                          id="edit-name"
+                                          value={formData.name}
+                                          onChange={(e) => {
+                                              const name = e.target.value;
+                                              setFormData({
+                                                  ...formData,
+                                                  name,
+                                                  slug: generateSlug(name),
+                                              });
+                                          }}
+                                          required
+                                          className={formErrors.name ? 'border-red-500' : ''}
+                                      />
+                                      {formErrors.name && (
+                                          <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                                      )}
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-name-en">产品名称 (英文)</Label>
+                                      <Input
+                                          id="edit-name-en"
+                                          value={formData.nameEn}
+                                          onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
+                                          placeholder="Product Name"
+                                      />
+                                  </div>
+                              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-sku">SKU *</Label>
-                    <Input
-                      id="edit-sku"
-                      value={formData.sku}
-                      onChange={(e) =>
-                        setFormData({ ...formData, sku: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-category">分类</Label>
-                    <select
-                      id="edit-category"
-                      value={formData.categoryId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, categoryId: e.target.value })
-                      }
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    >
-                      <option value="">无分类</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                              <div className="space-y-2">
+                                  <Label htmlFor="edit-slug">
+                                      Slug <span className="text-red-600">*</span>
+                                  </Label>
+                                  <Input
+                                      id="edit-slug"
+                                      value={formData.slug}
+                                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                      required
+                                      className={formErrors.slug ? 'border-red-500' : ''}
+                                  />
+                                  {formErrors.slug && <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>}
+                              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-short-desc">简短描述 (中文)</Label>
-                  <textarea
-                    id="edit-short-desc"
-                    value={formData.shortDesc}
-                    onChange={(e) =>
-                      setFormData({ ...formData, shortDesc: e.target.value })
-                    }
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                    placeholder="简短的产品描述..."
-                  />
-                </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-sku">
+                                          SKU <span className="text-red-600">*</span>
+                                      </Label>
+                                      <Input
+                                          id="edit-sku"
+                                          value={formData.sku}
+                                          onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                          required
+                                          className={formErrors.sku ? 'border-red-500' : ''}
+                                      />
+                                      {formErrors.sku && <p className="text-red-500 text-sm mt-1">{formErrors.sku}</p>}
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-category">分类</Label>
+                                      <select
+                                          id="edit-category"
+                                          value={formData.categoryId}
+                                          onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                      >
+                                          <option value="">无分类</option>
+                                          {categories.map((cat) => (
+                                              <option key={cat.id} value={cat.id}>
+                                                  {cat.name}
+                                              </option>
+                                          ))}
+                                      </select>
+                                  </div>
+                              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-short-desc-en">简短描述 (英文)</Label>
-                  <textarea
-                    id="edit-short-desc-en"
-                    value={formData.shortDescEn}
-                    onChange={(e) =>
-                      setFormData({ ...formData, shortDescEn: e.target.value })
-                    }
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                    placeholder="Short product description..."
-                  />
-                </div>
+                              <div className="space-y-2">
+                                  <Label htmlFor="edit-short-desc">简短描述 (中文)</Label>
+                                  <textarea
+                                      id="edit-short-desc"
+                                      value={formData.shortDesc}
+                                      onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })}
+                                      className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                      placeholder="简短的产品描述..."
+                                  />
+                              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-tag">产品标签 (中文)</Label>
-                    <Input
-                      id="edit-tag"
-                      value={formData.tag}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tag: e.target.value })
-                      }
-                      placeholder="核心产品、热门产品等"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-tag-en">产品标签 (英文)</Label>
-                    <Input
-                      id="edit-tag-en"
-                      value={formData.tagEn}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tagEn: e.target.value })
-                      }
-                      placeholder="Core Product, Popular Product"
-                    />
-                  </div>
-                </div>
+                              <div className="space-y-2">
+                                  <Label htmlFor="edit-short-desc-en">简短描述 (英文)</Label>
+                                  <textarea
+                                      id="edit-short-desc-en"
+                                      value={formData.shortDescEn}
+                                      onChange={(e) => setFormData({ ...formData, shortDescEn: e.target.value })}
+                                      className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                      placeholder="Short product description..."
+                                  />
+                              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-price-display">价格显示 (中文)</Label>
-                    <Input
-                      id="edit-price-display"
-                      value={formData.priceDisplay}
-                      onChange={(e) =>
-                        setFormData({ ...formData, priceDisplay: e.target.value })
-                      }
-                      placeholder="联系获取、面议等"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-price-display-en">价格显示 (英文)</Label>
-                    <Input
-                      id="edit-price-display-en"
-                      value={formData.priceDisplayEn}
-                      onChange={(e) =>
-                        setFormData({ ...formData, priceDisplayEn: e.target.value })
-                      }
-                      placeholder="Contact us, Negotiable"
-                    />
-                  </div>
-                </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-tag">产品标签 (中文)</Label>
+                                      <Input
+                                          id="edit-tag"
+                                          value={formData.tag}
+                                          onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                                          placeholder="核心产品、热门产品等"
+                                      />
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-tag-en">产品标签 (英文)</Label>
+                                      <Input
+                                          id="edit-tag-en"
+                                          value={formData.tagEn}
+                                          onChange={(e) => setFormData({ ...formData, tagEn: e.target.value })}
+                                          placeholder="Core Product, Popular Product"
+                                      />
+                                  </div>
+                              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-rating">产品评分 (1.0-5.0)</Label>
-                  <Input
-                    id="edit-rating"
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    max="5"
-                    value={formData.rating}
-                    onChange={(e) =>
-                      setFormData({ ...formData, rating: e.target.value })
-                    }
-                    placeholder="5.0"
-                  />
-                </div>
-              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-price-display">价格显示 (中文)</Label>
+                                      <Input
+                                          id="edit-price-display"
+                                          value={formData.priceDisplay}
+                                          onChange={(e) => setFormData({ ...formData, priceDisplay: e.target.value })}
+                                          placeholder="联系获取、面议等"
+                                      />
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-price-display-en">价格显示 (英文)</Label>
+                                      <Input
+                                          id="edit-price-display-en"
+                                          value={formData.priceDisplayEn}
+                                          onChange={(e) => setFormData({ ...formData, priceDisplayEn: e.target.value })}
+                                          placeholder="Contact us, Negotiable"
+                                      />
+                                  </div>
+                              </div>
 
-              {/* 详细描述 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">详细描述</h3>
+                              <div className="space-y-2">
+                                  <Label htmlFor="edit-rating">产品评分 (1.0-5.0)</Label>
+                                  <Input
+                                      id="edit-rating"
+                                      type="number"
+                                      step="0.1"
+                                      min="1"
+                                      max="5"
+                                      value={formData.rating}
+                                      onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+                                      placeholder="5.0"
+                                  />
+                              </div>
+                          </div>
 
-                <div className="space-y-2">
-                  <Label>产品描述 (中文) *</Label>
-                  <RichTextEditor
-                    value={formData.description}
-                    onChange={(value) =>
-                      setFormData({ ...formData, description: value })
-                    }
-                    placeholder="产品详细描述..."
-                  />
-                </div>
+                          {/* 详细描述 */}
+                          <div className="space-y-4">
+                              <h3 className="text-lg font-medium">详细描述</h3>
 
-                <div className="space-y-2">
-                  <Label>产品描述 (英文)</Label>
-                  <RichTextEditor
-                    value={formData.descriptionEn}
-                    onChange={(value) =>
-                      setFormData({ ...formData, descriptionEn: value })
-                    }
-                    placeholder="Product description..."
-                  />
-                </div>
-              </div>
+                              <div className="space-y-2">
+                                  <Label>
+                                      产品描述 (中文) <span className="text-red-600">*</span>
+                                  </Label>
+                                  <RichTextEditor
+                                      value={formData.description}
+                                      onChange={(value) => setFormData({ ...formData, description: value })}
+                                      placeholder="产品详细描述..."
+                                  />
+                                  {formErrors.description && (
+                                      <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
+                                  )}
+                              </div>
 
-              {/* 价格和库存 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">价格和库存</h3>
+                              <div className="space-y-2">
+                                  <Label>产品描述 (英文)</Label>
+                                  <RichTextEditor
+                                      value={formData.descriptionEn}
+                                      onChange={(value) => setFormData({ ...formData, descriptionEn: value })}
+                                      placeholder="Product description..."
+                                  />
+                              </div>
+                          </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-price">价格 (¥) *</Label>
-                    <Input
-                      id="edit-price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-sale-price">促销价 (¥)</Label>
-                    <Input
-                      id="edit-sale-price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.salePrice}
-                      onChange={(e) =>
-                        setFormData({ ...formData, salePrice: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-stock">库存 *</Label>
-                    <Input
-                      id="edit-stock"
-                      type="number"
-                      min="0"
-                      value={formData.stock}
-                      onChange={(e) =>
-                        setFormData({ ...formData, stock: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
+                          {/* 价格和库存 */}
+                          <div className="space-y-4">
+                              <h3 className="text-lg font-medium">价格和库存</h3>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-status">状态 *</Label>
-                  <select
-                    id="edit-status"
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData({ ...formData, status: e.target.value })
-                    }
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    required
-                  >
-                    <option value="ACTIVE">正常</option>
-                    <option value="INACTIVE">下架</option>
-                    <option value="OUT_OF_STOCK">缺货</option>
-                  </select>
-                </div>
-              </div>
+                              <div className="grid grid-cols-3 gap-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-price">
+                                          价格 (¥) <span className="text-red-600">*</span>
+                                      </Label>
+                                      <Input
+                                          id="edit-price"
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          value={formData.price}
+                                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                          required
+                                          className={formErrors.price ? 'border-red-500' : ''}
+                                      />
+                                      {formErrors.price && (
+                                          <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>
+                                      )}
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-sale-price">促销价 (¥)</Label>
+                                      <Input
+                                          id="edit-sale-price"
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          value={formData.salePrice}
+                                          onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                                      />
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="edit-stock">库存 *</Label>
+                                      <Input
+                                          id="edit-stock"
+                                          type="number"
+                                          min="0"
+                                          value={formData.stock}
+                                          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                                          required
+                                          className={formErrors.stock ? 'border-red-500' : ''}
+                                      />
+                                      {formErrors.stock && (
+                                          <p className="text-red-500 text-sm mt-1">{formErrors.stock}</p>
+                                      )}
+                                  </div>
+                              </div>
 
-              {/* 产品图片 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">产品图片</h3>
+                              <div className="space-y-2">
+                                  <Label htmlFor="edit-status">
+                                      状态 <span className="text-red-600">*</span>
+                                  </Label>
+                                  <select
+                                      id="edit-status"
+                                      value={formData.status}
+                                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                      required
+                                  >
+                                      <option value="ACTIVE">正常</option>
+                                      <option value="INACTIVE">下架</option>
+                                      <option value="OUT_OF_STOCK">缺货</option>
+                                  </select>
+                              </div>
+                          </div>
 
-                <div className="space-y-2">
-                  <Label>封面图片</Label>
-                  <ImageUpload
-                    value={formData.featuredImage}
-                    onChange={(url) =>
-                      setFormData({ ...formData, featuredImage: url })
-                    }
-                  />
-                </div>
+                          {/* 产品图片 */}
+                          <div className="space-y-4">
+                              <h3 className="text-lg font-medium">产品图片</h3>
 
-                <div className="space-y-2">
-                  <Label>产品图片库</Label>
-                  <div className="grid grid-cols-4 gap-4">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={image}
-                          alt={`产品图片 ${index + 1}`}
-                          className="w-full h-32 object-cover rounded border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                        >
-                          ×
-                        </button>
+                              <div className="space-y-2">
+                                  <Label>封面图片</Label>
+                                  <ImageUpload
+                                      value={formData.featuredImage}
+                                      onChange={(url) => setFormData({ ...formData, featuredImage: url })}
+                                  />
+                              </div>
+
+                              <div className="space-y-2">
+                                  <Label>产品图片库</Label>
+                                  <div className="grid grid-cols-4 gap-4">
+                                      {formData.images.map((image, index) => (
+                                          <div key={index} className="relative">
+                                              <img
+                                                  src={image}
+                                                  alt={`产品图片 ${index + 1}`}
+                                                  className="w-full h-32 object-cover rounded border"
+                                              />
+                                              <button
+                                                  type="button"
+                                                  onClick={() => removeImage(index)}
+                                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                              >
+                                                  ×
+                                              </button>
+                                          </div>
+                                      ))}
+                                      <ImageUpload value="" onChange={(url) => addImage(url)} />
+                                  </div>
+                              </div>
+                          </div>
+
+                          {/* 产品规格 */}
+                          <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                  <h3 className="text-lg font-medium">产品规格</h3>
+                                  <Button type="button" onClick={addSpecification} size="sm" variant="outline">
+                                      + 添加规格
+                                  </Button>
+                              </div>
+
+                              {formData.specifications.map((spec, index) => (
+                                  <div key={index} className="border rounded-lg p-4 space-y-2">
+                                      <div className="flex justify-between items-center">
+                                          <span className="text-sm font-medium">规格 {index + 1}</span>
+                                          <button
+                                              type="button"
+                                              onClick={() => removeSpecification(index)}
+                                              className="text-red-600 hover:text-red-800 text-sm"
+                                          >
+                                              删除
+                                          </button>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2">
+                                          <Input
+                                              placeholder="规格名 (中文)"
+                                              value={spec.name}
+                                              onChange={(e) => updateSpecification(index, 'name', e.target.value)}
+                                          />
+                                          <Input
+                                              placeholder="规格名 (英文)"
+                                              value={spec.nameEn || ''}
+                                              onChange={(e) => updateSpecification(index, 'nameEn', e.target.value)}
+                                          />
+                                          <Input
+                                              placeholder="规格值 (中文)"
+                                              value={spec.value}
+                                              onChange={(e) => updateSpecification(index, 'value', e.target.value)}
+                                          />
+                                          <Input
+                                              placeholder="规格值 (英文)"
+                                              value={spec.valueEn || ''}
+                                              onChange={(e) => updateSpecification(index, 'valueEn', e.target.value)}
+                                          />
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+
+                          {/* 产品特性 */}
+                          <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                  <h3 className="text-lg font-medium">产品特性</h3>
+                                  <Button type="button" onClick={addFeature} size="sm" variant="outline">
+                                      + 添加特性
+                                  </Button>
+                              </div>
+
+                              {formData.features.map((feature, index) => (
+                                  <div key={index} className="border rounded-lg p-4 space-y-2">
+                                      <div className="flex justify-between items-center">
+                                          <span className="text-sm font-medium">特性 {index + 1}</span>
+                                          <button
+                                              type="button"
+                                              onClick={() => removeFeature(index)}
+                                              className="text-red-600 hover:text-red-800 text-sm"
+                                          >
+                                              删除
+                                          </button>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2">
+                                          <Input
+                                              placeholder="特性标题 (中文)"
+                                              value={feature.title}
+                                              onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                                          />
+                                          <Input
+                                              placeholder="特性标题 (英文)"
+                                              value={feature.titleEn || ''}
+                                              onChange={(e) => updateFeature(index, 'titleEn', e.target.value)}
+                                          />
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2">
+                                          <textarea
+                                              placeholder="特性描述 (中文)"
+                                              value={feature.description}
+                                              onChange={(e) => updateFeature(index, 'description', e.target.value)}
+                                              className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                          />
+                                          <textarea
+                                              placeholder="特性描述 (英文)"
+                                              value={feature.descriptionEn || ''}
+                                              onChange={(e) => updateFeature(index, 'descriptionEn', e.target.value)}
+                                              className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+                                          />
+                                      </div>
+                                      <Input
+                                          placeholder="图标 (可选)"
+                                          value={feature.icon || ''}
+                                          onChange={(e) => updateFeature(index, 'icon', e.target.value)}
+                                      />
+                                  </div>
+                              ))}
+                          </div>
                       </div>
-                    ))}
-                    <ImageUpload
-                      value=""
-                      onChange={(url) => addImage(url)}
-                    />
-                  </div>
-                </div>
-              </div>
+                      <DialogFooter>
+                          <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                  setIsEditDialogOpen(false);
+                                  setSelectedProduct(null);
+                                  resetForm();
+                              }}
+                              disabled={formLoading}
+                          >
+                              取消
+                          </Button>
+                          <Button type="submit" disabled={formLoading}>
+                              {formLoading ? '更新中...' : '更新'}
+                          </Button>
+                      </DialogFooter>
+                  </form>
+              </DialogContent>
+          </Dialog>
 
-              {/* 产品规格 */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">产品规格</h3>
-                  <Button
-                    type="button"
-                    onClick={addSpecification}
-                    size="sm"
-                    variant="outline"
-                  >
-                    + 添加规格
-                  </Button>
-                </div>
-
-                {formData.specifications.map((spec, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">规格 {index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeSpecification(index)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+          {/* 删除确认对话框 */}
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <DialogContent>
+                  <DialogHeader>
+                      <DialogTitle>确认删除</DialogTitle>
+                      <DialogDescription>
+                          确定要删除产品 &quot;{selectedProduct?.name}&quot; 吗? 此操作不可恢复。
+                      </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                      <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                              setIsDeleteDialogOpen(false);
+                              setSelectedProduct(null);
+                          }}
+                          disabled={formLoading}
                       >
-                        删除
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        placeholder="规格名 (中文)"
-                        value={spec.name}
-                        onChange={(e) =>
-                          updateSpecification(index, "name", e.target.value)
-                        }
-                      />
-                      <Input
-                        placeholder="规格名 (英文)"
-                        value={spec.nameEn || ""}
-                        onChange={(e) =>
-                          updateSpecification(index, "nameEn", e.target.value)
-                        }
-                      />
-                      <Input
-                        placeholder="规格值 (中文)"
-                        value={spec.value}
-                        onChange={(e) =>
-                          updateSpecification(index, "value", e.target.value)
-                        }
-                      />
-                      <Input
-                        placeholder="规格值 (英文)"
-                        value={spec.valueEn || ""}
-                        onChange={(e) =>
-                          updateSpecification(index, "valueEn", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 产品特性 */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">产品特性</h3>
-                  <Button
-                    type="button"
-                    onClick={addFeature}
-                    size="sm"
-                    variant="outline"
-                  >
-                    + 添加特性
-                  </Button>
-                </div>
-
-                {formData.features.map((feature, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">特性 {index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeFeature(index)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        删除
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        placeholder="特性标题 (中文)"
-                        value={feature.title}
-                        onChange={(e) =>
-                          updateFeature(index, "title", e.target.value)
-                        }
-                      />
-                      <Input
-                        placeholder="特性标题 (英文)"
-                        value={feature.titleEn || ""}
-                        onChange={(e) =>
-                          updateFeature(index, "titleEn", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <textarea
-                        placeholder="特性描述 (中文)"
-                        value={feature.description}
-                        onChange={(e) =>
-                          updateFeature(index, "description", e.target.value)
-                        }
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                      />
-                      <textarea
-                        placeholder="特性描述 (英文)"
-                        value={feature.descriptionEn || ""}
-                        onChange={(e) =>
-                          updateFeature(index, "descriptionEn", e.target.value)
-                        }
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                      />
-                    </div>
-                    <Input
-                      placeholder="图标 (可选)"
-                      value={feature.icon || ""}
-                      onChange={(e) =>
-                        updateFeature(index, "icon", e.target.value)
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsEditDialogOpen(false);
-                  setSelectedProduct(null);
-                  resetForm();
-                }}
-                disabled={formLoading}
-              >
-                取消
-              </Button>
-              <Button type="submit" disabled={formLoading}>
-                {formLoading ? "更新中..." : "更新"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* 删除确认对话框 */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
-            <DialogDescription>
-              确定要删除产品 &quot;{selectedProduct?.name}&quot; 吗?
-              此操作不可恢复。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setSelectedProduct(null);
-              }}
-              disabled={formLoading}
-            >
-              取消
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDeleteProduct}
-              disabled={formLoading}
-            >
-              {formLoading ? "删除中..." : "删除"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+                          取消
+                      </Button>
+                      <Button type="button" variant="destructive" onClick={handleDeleteProduct} disabled={formLoading}>
+                          {formLoading ? '删除中...' : '删除'}
+                      </Button>
+                  </DialogFooter>
+              </DialogContent>
+          </Dialog>
+      </div>
   );
 }

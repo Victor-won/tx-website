@@ -159,8 +159,40 @@ export default function PostsPage() {
     }
   };
 
+  const validateForm = (): boolean => {
+    const errors: Partial<FormData> = {};
+
+    // 验证必填字段
+    if (!formData.title.trim()) {
+      errors.title = "标题(中文)不能为空";
+    }
+
+    if (!formData.slug.trim()) {
+      errors.slug = "Slug不能为空";
+    }
+
+    if (!formData.content.trim()) {
+      errors.content = "内容(中文)不能为空";
+    }
+
+    setFormErrors(errors);
+
+    // 如果有错误，返回 false
+    if (Object.keys(errors).length > 0) {
+      alert("请填写所��必填字段");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleCreatePost = async () => {
     setFormErrors({});
+
+    // 验证表单
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       const response = await fetch("/api/posts", {
@@ -191,6 +223,11 @@ export default function PostsPage() {
   const handleUpdatePost = async () => {
     if (!currentPost) return;
     setFormErrors({});
+
+    // 验证表单
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/posts/${currentPost.id}`, {
@@ -475,729 +512,664 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">文章管理</h1>
-        <p className="text-gray-600">管理您的文章内容</p>
-      </div>
+      <div className="container mx-auto p-6">
+          <div className="mb-6">
+              <h1 className="text-3xl font-bold mb-2">文章管理</h1>
+              <p className="text-gray-600">管理您的文章内容</p>
+          </div>
 
-      <div className="mb-6 flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="搜索文章标题..."
-            className="w-full px-4 py-2 border rounded-lg"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPagination((prev) => ({ ...prev, page: 1 }));
-            }}
-          />
-        </div>
-        <select
-          className="px-4 py-2 border rounded-lg"
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPagination((prev) => ({ ...prev, page: 1 }));
-          }}
-        >
-          <option value="">全部状态</option>
-          <option value="DRAFT">草稿</option>
-          <option value="PUBLISHED">已发布</option>
-          <option value="ARCHIVED">已归档</option>
-        </select>
-        <select
-          className="px-4 py-2 border rounded-lg"
-          value={categoryFilter}
-          onChange={(e) => {
-            setCategoryFilter(e.target.value);
-            setPagination((prev) => ({ ...prev, page: 1 }));
-          }}
-        >
-          <option value="">全部分类</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <button
-              onClick={() => {
-                resetForm();
-                setIsCreateOpen(true);
-              }}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              新建文章
-            </button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>新建文章</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    标题 (中文) *
-                  </label>
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
                   <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded"
-                    value={formData.title}
-                    onChange={(e) => handleTitleChange(e.target.value)}
+                      type="text"
+                      placeholder="搜索文章标题..."
+                      className="w-full px-4 py-2 border rounded-lg"
+                      value={searchTerm}
+                      onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
                   />
-                  {formErrors.title && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formErrors.title}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-medium">
-                      Title (English)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => handleTranslateField("title", "titleEn", "标题")}
-                      disabled={translatingField === "标题" || !formData.title}
-                      className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                    >
-                      {translatingField === "标题" ? (
-                        <>
-                          <span className="animate-spin">⟳</span>
-                          翻译中
-                        </>
-                      ) : (
-                        <>
-                          🌐 翻译
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded"
-                    value={formData.titleEn}
-                    onChange={(e) => handleTitleEnChange(e.target.value)}
-                  />
-                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Slug *
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded bg-gray-50"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                  }
-                />
-                {formErrors.slug && (
-                  <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    摘要 (中文)
-                  </label>
-                  <textarea
-                    className="w-full px-3 py-2 border rounded"
-                    rows={3}
-                    value={formData.excerpt}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        excerpt: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-medium">
-                      Excerpt (English)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => handleTranslateField("excerpt", "excerptEn", "摘要")}
-                      disabled={translatingField === "摘要" || !formData.excerpt}
-                      className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                    >
-                      {translatingField === "摘要" ? (
-                        <>
-                          <span className="animate-spin">⟳</span>
-                          翻译中
-                        </>
-                      ) : (
-                        <>
-                          🌐 翻译
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  <textarea
-                    className="w-full px-3 py-2 border rounded"
-                    rows={3}
-                    value={formData.excerptEn}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        excerptEn: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => handleAutoTranslate()}
-                  disabled={translating}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {translating ? (
-                    <>
-                      <span className="animate-spin">⟳</span>
-                      翻译中 {translationProgress.total > 0 && `(${translationProgress.current}/${translationProgress.total})`}
-                    </>
-                  ) : (
-                    <>
-                      🌐 批量翻译所有字段
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    内容 (中文) *
-                  </label>
-                  <RichTextEditor
-                    value={formData.content}
-                    onChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        content: value,
-                      }))
-                    }
-                    placeholder="输入中文内容..."
-                  />
-                  {formErrors.content && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formErrors.content}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-medium">
-                      Content (English)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => handleTranslateField("content", "contentEn", "内容")}
-                      disabled={translatingField === "内容" || !formData.content}
-                      className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                    >
-                      {translatingField === "内容" ? (
-                        <>
-                          <span className="animate-spin">⟳</span>
-                          翻译中
-                        </>
-                      ) : (
-                        <>
-                          🌐 翻译
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  <RichTextEditor
-                    value={formData.contentEn}
-                    onChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        contentEn: value,
-                      }))
-                    }
-                    placeholder="Enter English content..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  封面图片
-                </label>
-                <ImageUpload
-                  value={formData.featuredImage}
-                  onChange={(url) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      featuredImage: url,
-                    }))
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    分类
-                  </label>
-                  <select
-                    className="w-full px-3 py-2 border rounded"
-                    value={formData.categoryId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        categoryId: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">无分类</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    状态
-                  </label>
-                  <select
-                    className="w-full px-3 py-2 border rounded"
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        status: e.target.value as FormData["status"],
-                      }))
-                    }
-                  >
-                    <option value="DRAFT">草稿</option>
-                    <option value="PUBLISHED">已发布</option>
-                    <option value="ARCHIVED">已归档</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <button
-                onClick={() => setIsCreateOpen(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              <select
+                  className="px-4 py-2 border rounded-lg"
+                  value={statusFilter}
+                  onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPagination((prev) => ({ ...prev, page: 1 }));
+                  }}
               >
-                取消
-              </button>
-              <button
-                onClick={handleCreatePost}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                创建
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                标题
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                分类
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                状态
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                作者
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                创建时间
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {posts.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-4 text-center text-gray-500"
-                >
-                  暂无文章
-                </td>
-              </tr>
-            ) : (
-              posts.map((post) => (
-                <tr key={post.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      {post.featuredImage && (
-                        <img
-                          src={post.featuredImage}
-                          alt={post.title}
-                          className="w-12 h-12 object-cover rounded mr-3"
-                        />
-                      )}
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {post.title}
-                        </div>
-                        {post.titleEn && (
-                          <div className="text-sm text-gray-500">
-                            {post.titleEn}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {post.category?.name || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(post.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {post.author?.name || post.author?.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(post.createdAt).toLocaleDateString("zh-CN")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleViewPost(post.slug)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      title="在新标签页中查看前台详情页"
-                    >
-                      查看
-                    </button>
-                    <button
-                      onClick={() => openEditDialog(post)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      编辑
-                    </button>
-                    <button
-                      onClick={() => handleCopyPost(post)}
-                      className="text-green-600 hover:text-green-900 mr-4"
-                    >
-                      复制
-                    </button>
-                    <button
-                      onClick={() => openDeleteDialog(post)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      删除
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center gap-2">
-          <button
-            onClick={() =>
-              setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
-            }
-            disabled={pagination.page === 1}
-            className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            上一页
-          </button>
-          <span className="px-4 py-2">
-            第 {pagination.page} / {pagination.totalPages} 页
-          </span>
-          <button
-            onClick={() =>
-              setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-            }
-            disabled={pagination.page === pagination.totalPages}
-            className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            下一页
-          </button>
-        </div>
-      )}
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>编辑文章</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  标题 (中文) *
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                />
-                {formErrors.title && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formErrors.title}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Title (English)
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  value={formData.titleEn}
-                  onChange={(e) => handleTitleEnChange(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Slug *
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded bg-gray-50"
-                value={formData.slug}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                }
-              />
-              {formErrors.slug && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  摘要 (中文)
-                </label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded"
-                  rows={3}
-                  value={formData.excerpt}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      excerpt: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Excerpt (English)
-                </label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded"
-                  rows={3}
-                  value={formData.excerptEn}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      excerptEn: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => handleAutoTranslate()}
-                disabled={translating}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {translating ? (
-                  <>
-                    <span className="animate-spin">⟳</span>
-                    翻译中...
-                  </>
-                ) : (
-                  <>
-                    🌐 自动翻译为英文
-                  </>
-                )}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  内容 (中文) *
-                </label>
-                <RichTextEditor
-                  value={formData.content}
-                  onChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      content: value,
-                    }))
-                  }
-                  placeholder="输入中文内容..."
-                />
-                {formErrors.content && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formErrors.content}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Content (English)
-                </label>
-                <RichTextEditor
-                  value={formData.contentEn}
-                  onChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      contentEn: value,
-                    }))
-                  }
-                  placeholder="Enter English content..."
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                封面图片
-              </label>
-              <ImageUpload
-                value={formData.featuredImage}
-                onChange={(url) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    featuredImage: url,
-                  }))
-                }
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  分类
-                </label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={formData.categoryId}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      categoryId: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">无分类</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  状态
-                </label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      status: e.target.value as FormData["status"],
-                    }))
-                  }
-                >
+                  <option value="">全部状态</option>
                   <option value="DRAFT">草稿</option>
                   <option value="PUBLISHED">已发布</option>
                   <option value="ARCHIVED">已归档</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <button
-              onClick={() => {
-                setIsEditOpen(false);
-                setCurrentPost(null);
-                resetForm();
-              }}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              取消
-            </button>
-            <button
-              onClick={handleUpdatePost}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              保存
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              </select>
+              <select
+                  className="px-4 py-2 border rounded-lg"
+                  value={categoryFilter}
+                  onChange={(e) => {
+                      setCategoryFilter(e.target.value);
+                      setPagination((prev) => ({ ...prev, page: 1 }));
+                  }}
+              >
+                  <option value="">全部分类</option>
+                  {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                          {category.name}
+                      </option>
+                  ))}
+              </select>
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                  <DialogTrigger asChild>
+                      <button
+                          onClick={() => {
+                              resetForm();
+                              setIsCreateOpen(true);
+                          }}
+                          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                          新建文章
+                      </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl">
+                      <DialogHeader>
+                          <DialogTitle>新建文章</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
+                          <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                  <label className="block text-sm font-medium mb-1">
+                                      标题 (中文) <span className="text-red-600">*</span>
+                                  </label>
+                                  <input
+                                      type="text"
+                                      className={`w-full px-3 py-2 border rounded ${
+                                          formErrors.title ? 'border-red-500' : ''
+                                      }`}
+                                      value={formData.title}
+                                      onChange={(e) => handleTitleChange(e.target.value)}
+                                  />
+                                  {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
+                              </div>
+                              <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                      <label className="block text-sm font-medium">Title (English)</label>
+                                      <button
+                                          type="button"
+                                          onClick={() => handleTranslateField('title', 'titleEn', '标题')}
+                                          disabled={translatingField === '标题' || !formData.title}
+                                          className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                      >
+                                          {translatingField === '标题' ? (
+                                              <>
+                                                  <span className="animate-spin">⟳</span>
+                                                  翻译中
+                                              </>
+                                          ) : (
+                                              <>🌐 翻译</>
+                                          )}
+                                      </button>
+                                  </div>
+                                  <input
+                                      type="text"
+                                      className="w-full px-3 py-2 border rounded"
+                                      value={formData.titleEn}
+                                      onChange={(e) => handleTitleEnChange(e.target.value)}
+                                  />
+                              </div>
+                          </div>
 
-      {/* Delete Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
-          </DialogHeader>
-          <p className="py-4">
-            确定要删除文章 &quot;{currentPost?.title}&quot; 吗？此操作无法撤销。
-          </p>
-          <DialogFooter>
-            <button
-              onClick={() => {
-                setIsDeleteOpen(false);
-                setCurrentPost(null);
-              }}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              取消
-            </button>
-            <button
-              onClick={handleDeletePost}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-              删除
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+                          <div>
+                              <label className="block text-sm font-medium mb-1">
+                                  Slug <span className="text-red-600">*</span>
+                              </label>
+                              <input
+                                  type="text"
+                                  className={`w-full px-3 py-2 border rounded bg-gray-50 ${
+                                      formErrors.slug ? 'border-red-500' : ''
+                                  }`}
+                                  value={formData.slug}
+                                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                              />
+                              {formErrors.slug && <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                  <label className="block text-sm font-medium mb-1">摘要 (中文)</label>
+                                  <textarea
+                                      className="w-full px-3 py-2 border rounded"
+                                      rows={3}
+                                      value={formData.excerpt}
+                                      onChange={(e) =>
+                                          setFormData((prev) => ({
+                                              ...prev,
+                                              excerpt: e.target.value,
+                                          }))
+                                      }
+                                  />
+                              </div>
+                              <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                      <label className="block text-sm font-medium">Excerpt (English)</label>
+                                      <button
+                                          type="button"
+                                          onClick={() => handleTranslateField('excerpt', 'excerptEn', '摘要')}
+                                          disabled={translatingField === '摘要' || !formData.excerpt}
+                                          className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                      >
+                                          {translatingField === '摘要' ? (
+                                              <>
+                                                  <span className="animate-spin">⟳</span>
+                                                  翻译中
+                                              </>
+                                          ) : (
+                                              <>🌐 翻译</>
+                                          )}
+                                      </button>
+                                  </div>
+                                  <textarea
+                                      className="w-full px-3 py-2 border rounded"
+                                      rows={3}
+                                      value={formData.excerptEn}
+                                      onChange={(e) =>
+                                          setFormData((prev) => ({
+                                              ...prev,
+                                              excerptEn: e.target.value,
+                                          }))
+                                      }
+                                  />
+                              </div>
+                          </div>
+
+                          <div className="flex justify-end">
+                              <button
+                                  type="button"
+                                  onClick={() => handleAutoTranslate()}
+                                  disabled={translating}
+                                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                              >
+                                  {translating ? (
+                                      <>
+                                          <span className="animate-spin">⟳</span>
+                                          翻译中{' '}
+                                          {translationProgress.total > 0 &&
+                                              `(${translationProgress.current}/${translationProgress.total})`}
+                                      </>
+                                  ) : (
+                                      <>🌐 批量翻译所有字段</>
+                                  )}
+                              </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                  <label className="block text-sm font-medium mb-1">
+                                      内容 (中文) <span className="text-red-600">*</span>
+                                  </label>
+                                  <RichTextEditor
+                                      value={formData.content}
+                                      onChange={(value) =>
+                                          setFormData((prev) => ({
+                                              ...prev,
+                                              content: value,
+                                          }))
+                                      }
+                                      placeholder="输入中文内容..."
+                                  />
+                                  {formErrors.content && (
+                                      <p className="text-red-500 text-sm mt-1">{formErrors.content}</p>
+                                  )}
+                              </div>
+                              <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                      <label className="block text-sm font-medium">Content (English)</label>
+                                      <button
+                                          type="button"
+                                          onClick={() => handleTranslateField('content', 'contentEn', '内容')}
+                                          disabled={translatingField === '内容' || !formData.content}
+                                          className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                      >
+                                          {translatingField === '内容' ? (
+                                              <>
+                                                  <span className="animate-spin">⟳</span>
+                                                  翻译中
+                                              </>
+                                          ) : (
+                                              <>🌐 翻译</>
+                                          )}
+                                      </button>
+                                  </div>
+                                  <RichTextEditor
+                                      value={formData.contentEn}
+                                      onChange={(value) =>
+                                          setFormData((prev) => ({
+                                              ...prev,
+                                              contentEn: value,
+                                          }))
+                                      }
+                                      placeholder="Enter English content..."
+                                  />
+                              </div>
+                          </div>
+
+                          <div>
+                              <label className="block text-sm font-medium mb-1">封面图片</label>
+                              <ImageUpload
+                                  value={formData.featuredImage}
+                                  onChange={(url) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          featuredImage: url,
+                                      }))
+                                  }
+                              />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                  <label className="block text-sm font-medium mb-1">分类</label>
+                                  <select
+                                      className="w-full px-3 py-2 border rounded"
+                                      value={formData.categoryId}
+                                      onChange={(e) =>
+                                          setFormData((prev) => ({
+                                              ...prev,
+                                              categoryId: e.target.value,
+                                          }))
+                                      }
+                                  >
+                                      <option value="">无分类</option>
+                                      {categories.map((category) => (
+                                          <option key={category.id} value={category.id}>
+                                              {category.name}
+                                          </option>
+                                      ))}
+                                  </select>
+                              </div>
+                              <div>
+                                  <label className="block text-sm font-medium mb-1">状态</label>
+                                  <select
+                                      className="w-full px-3 py-2 border rounded"
+                                      value={formData.status}
+                                      onChange={(e) =>
+                                          setFormData((prev) => ({
+                                              ...prev,
+                                              status: e.target.value as FormData['status'],
+                                          }))
+                                      }
+                                  >
+                                      <option value="DRAFT">草稿</option>
+                                      <option value="PUBLISHED">已发布</option>
+                                      <option value="ARCHIVED">已归档</option>
+                                  </select>
+                              </div>
+                          </div>
+                      </div>
+                      <DialogFooter>
+                          <button
+                              onClick={() => setIsCreateOpen(false)}
+                              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                          >
+                              取消
+                          </button>
+                          <button
+                              onClick={handleCreatePost}
+                              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                          >
+                              创建
+                          </button>
+                      </DialogFooter>
+                  </DialogContent>
+              </Dialog>
+          </div>
+
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                      <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              标题
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              分类
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              状态
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              作者
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              创建时间
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              操作
+                          </th>
+                      </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                      {posts.length === 0 ? (
+                          <tr>
+                              <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                                  暂无文章
+                              </td>
+                          </tr>
+                      ) : (
+                          posts.map((post) => (
+                              <tr key={post.id} className="hover:bg-gray-50">
+                                  <td className="px-6 py-4">
+                                      <div className="flex items-center">
+                                          {post.featuredImage && (
+                                              <img
+                                                  src={post.featuredImage}
+                                                  alt={post.title}
+                                                  className="w-12 h-12 object-cover rounded mr-3"
+                                              />
+                                          )}
+                                          <div>
+                                              <div className="text-sm font-medium text-gray-900">{post.title}</div>
+                                              {post.titleEn && (
+                                                  <div className="text-sm text-gray-500">{post.titleEn}</div>
+                                              )}
+                                          </div>
+                                      </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                      {post.category?.name || '-'}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(post.status)}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                      {post.author?.name || post.author?.email}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                      {new Date(post.createdAt).toLocaleDateString('zh-CN')}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                      <button
+                                          onClick={() => handleViewPost(post.slug)}
+                                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                          title="在新标签页中查看前台详情页"
+                                      >
+                                          查看
+                                      </button>
+                                      <button
+                                          onClick={() => openEditDialog(post)}
+                                          className="text-blue-600 hover:text-blue-900 mr-4"
+                                      >
+                                          编辑
+                                      </button>
+                                      <button
+                                          onClick={() => handleCopyPost(post)}
+                                          className="text-green-600 hover:text-green-900 mr-4"
+                                      >
+                                          复制
+                                      </button>
+                                      <button
+                                          onClick={() => openDeleteDialog(post)}
+                                          className="text-red-600 hover:text-red-900"
+                                      >
+                                          删除
+                                      </button>
+                                  </td>
+                              </tr>
+                          ))
+                      )}
+                  </tbody>
+              </table>
+          </div>
+
+          {pagination.totalPages > 1 && (
+              <div className="mt-6 flex justify-center gap-2">
+                  <button
+                      onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
+                      disabled={pagination.page === 1}
+                      className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      上一页
+                  </button>
+                  <span className="px-4 py-2">
+                      第 {pagination.page} / {pagination.totalPages} 页
+                  </span>
+                  <button
+                      onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
+                      disabled={pagination.page === pagination.totalPages}
+                      className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      下一页
+                  </button>
+              </div>
+          )}
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+              <DialogContent className="max-w-4xl">
+                  <DialogHeader>
+                      <DialogTitle>编辑文章</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium mb-1">
+                                  标题 (中文) <span className="text-red-600">*</span>
+                              </label>
+                              <input
+                                  type="text"
+                                  className={`w-full px-3 py-2 border rounded ${
+                                      formErrors.title ? 'border-red-500' : ''
+                                  }`}
+                                  value={formData.title}
+                                  onChange={(e) => handleTitleChange(e.target.value)}
+                              />
+                              {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium mb-1">Title (English)</label>
+                              <input
+                                  type="text"
+                                  className="w-full px-3 py-2 border rounded"
+                                  value={formData.titleEn}
+                                  onChange={(e) => handleTitleEnChange(e.target.value)}
+                              />
+                          </div>
+                      </div>
+
+                      <div>
+                          <label className="block text-sm font-medium mb-1">
+                              Slug <span className="text-red-600">*</span>
+                          </label>
+                          <input
+                              type="text"
+                              className={`w-full px-3 py-2 border rounded bg-gray-50 ${
+                                  formErrors.slug ? 'border-red-500' : ''
+                              }`}
+                              value={formData.slug}
+                              onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                          />
+                          {formErrors.slug && <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium mb-1">摘要 (中文)</label>
+                              <textarea
+                                  className="w-full px-3 py-2 border rounded"
+                                  rows={3}
+                                  value={formData.excerpt}
+                                  onChange={(e) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          excerpt: e.target.value,
+                                      }))
+                                  }
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium mb-1">Excerpt (English)</label>
+                              <textarea
+                                  className="w-full px-3 py-2 border rounded"
+                                  rows={3}
+                                  value={formData.excerptEn}
+                                  onChange={(e) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          excerptEn: e.target.value,
+                                      }))
+                                  }
+                              />
+                          </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                          <button
+                              type="button"
+                              onClick={() => handleAutoTranslate()}
+                              disabled={translating}
+                              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          >
+                              {translating ? (
+                                  <>
+                                      <span className="animate-spin">⟳</span>
+                                      翻译中...
+                                  </>
+                              ) : (
+                                  <>🌐 自动翻译为英文</>
+                              )}
+                          </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium mb-1">
+                                  内容 (中文) <span className="text-red-600">*</span>
+                              </label>
+                              <RichTextEditor
+                                  value={formData.content}
+                                  onChange={(value) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          content: value,
+                                      }))
+                                  }
+                                  placeholder="输入中文内容..."
+                              />
+                              {formErrors.content && <p className="text-red-500 text-sm mt-1">{formErrors.content}</p>}
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium mb-1">Content (English)</label>
+                              <RichTextEditor
+                                  value={formData.contentEn}
+                                  onChange={(value) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          contentEn: value,
+                                      }))
+                                  }
+                                  placeholder="Enter English content..."
+                              />
+                          </div>
+                      </div>
+
+                      <div>
+                          <label className="block text-sm font-medium mb-1">封面图片</label>
+                          <ImageUpload
+                              value={formData.featuredImage}
+                              onChange={(url) =>
+                                  setFormData((prev) => ({
+                                      ...prev,
+                                      featuredImage: url,
+                                  }))
+                              }
+                          />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium mb-1">分类</label>
+                              <select
+                                  className="w-full px-3 py-2 border rounded"
+                                  value={formData.categoryId}
+                                  onChange={(e) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          categoryId: e.target.value,
+                                      }))
+                                  }
+                              >
+                                  <option value="">无分类</option>
+                                  {categories.map((category) => (
+                                      <option key={category.id} value={category.id}>
+                                          {category.name}
+                                      </option>
+                                  ))}
+                              </select>
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium mb-1">状态</label>
+                              <select
+                                  className="w-full px-3 py-2 border rounded"
+                                  value={formData.status}
+                                  onChange={(e) =>
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          status: e.target.value as FormData['status'],
+                                      }))
+                                  }
+                              >
+                                  <option value="DRAFT">草稿</option>
+                                  <option value="PUBLISHED">已发布</option>
+                                  <option value="ARCHIVED">已归档</option>
+                              </select>
+                          </div>
+                      </div>
+                  </div>
+                  <DialogFooter>
+                      <button
+                          onClick={() => {
+                              setIsEditOpen(false);
+                              setCurrentPost(null);
+                              resetForm();
+                          }}
+                          className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                      >
+                          取消
+                      </button>
+                      <button
+                          onClick={handleUpdatePost}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                          保存
+                      </button>
+                  </DialogFooter>
+              </DialogContent>
+          </Dialog>
+
+          {/* Delete Dialog */}
+          <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+              <DialogContent>
+                  <DialogHeader>
+                      <DialogTitle>确认删除</DialogTitle>
+                  </DialogHeader>
+                  <p className="py-4">确定要删除文章 &quot;{currentPost?.title}&quot; 吗？此操作无法撤销。</p>
+                  <DialogFooter>
+                      <button
+                          onClick={() => {
+                              setIsDeleteOpen(false);
+                              setCurrentPost(null);
+                          }}
+                          className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                      >
+                          取消
+                      </button>
+                      <button
+                          onClick={handleDeletePost}
+                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                      >
+                          删除
+                      </button>
+                  </DialogFooter>
+              </DialogContent>
+          </Dialog>
+      </div>
   );
 }
