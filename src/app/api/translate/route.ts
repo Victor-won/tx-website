@@ -27,6 +27,14 @@ async function translateText(text: string, targetLang: string = "en"): Promise<s
 
 // 翻译纯文本
 async function translatePlainText(text: string, targetLang: string): Promise<string> {
+  // MyMemory API 限制单次请求最大 500 字符
+  const MAX_LENGTH = 500;
+
+  // 如果文本太长，需要分块翻译
+  if (text.length > MAX_LENGTH) {
+    return await translateLongText(text, targetLang);
+  }
+
   const encodedText = encodeURIComponent(text);
   const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=zh|${targetLang}`;
 
@@ -37,7 +45,9 @@ async function translatePlainText(text: string, targetLang: string): Promise<str
   });
 
   if (!response.ok) {
-    throw new Error("Translation API request failed");
+    const errorText = await response.text();
+    console.error("Translation API error:", response.status, errorText);
+    throw new Error(`Translation API request failed: ${response.status}`);
   }
 
   const data = await response.json();
@@ -46,11 +56,81 @@ async function translatePlainText(text: string, targetLang: string): Promise<str
     return data.responseData.translatedText;
   }
 
-  throw new Error("Translation failed");
+  if (data.responseStatus === 403) {
+    throw new Error("翻译服务配额已用完，请稍后重试");
+  }
+
+  console.error("Translation API response:", data);
+  throw new Error(data.responseDetails || "Translation failed");
+}
+
+// 翻译长文本（分块处理）
+async function translateLongText(text: string, targetLang: string): Promise<string> {
+  const MAX_LENGTH = 500;
+  const chunks: string[] = [];
+
+  // 按句子分割文本
+  const sentences = text.split(/([。！？\n.!?]+)/);
+  let currentChunk = "";
+
+  for (const sentence of sentences) {
+    if ((currentChunk + sentence).length > MAX_LENGTH && currentChunk) {
+      chunks.push(currentChunk);
+      currentChunk = sentence;
+    } else {
+      currentChunk += sentence;
+    }
+  }
+
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+
+  // 翻译每个块（添加延迟避免速率限制）
+  const translatedChunks: string[] = [];
+  for (let i = 0; i < chunks.length; i++) {
+    if (i > 0) {
+      // 每次请求之间等待 1 秒，避免触发速率限制
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    const encodedText = encodeURIComponent(chunks[i]);
+    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=zh|${targetLang}`;
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Translation API error (chunk ${i + 1}/${chunks.length}):`, response.status, errorText);
+      throw new Error(`Translation failed at chunk ${i + 1}/${chunks.length}: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.responseStatus === 200 && data.responseData?.translatedText) {
+      translatedChunks.push(data.responseData.translatedText);
+    } else if (data.responseStatus === 403) {
+      throw new Error("翻译服务配额已用完，请稍后重试");
+    } else {
+      console.error(`Translation API response (chunk ${i + 1}/${chunks.length}):`, data);
+      throw new Error(data.responseDetails || `Translation failed at chunk ${i + 1}/${chunks.length}`);
+    }
+  }
+
+  return translatedChunks.join("");
 }
 
 // 翻译 HTML，保留结构和标签（特别是图片）
 async function translateHtml(html: string, targetLang: string): Promise<string> {
+  // 检查 HTML 长度，如果太长（超过 10000 字符），建议分段处理
+  if (html.length > 10000) {
+    throw new Error("HTML 内容过长（超过 10000 字符），建议分段翻译或使用专业翻译服务");
+  }
+
   // 保存所有 HTML 标签的映射
   const tagMap: { [key: string]: string } = {};
   let tagCounter = 0;
@@ -71,7 +151,7 @@ async function translateHtml(html: string, targetLang: string): Promise<string> 
     return html;
   }
 
-  // 翻译纯文本
+  // 翻译纯文本（会自动处理长文本分块）
   const translatedText = await translatePlainText(processedHtml, targetLang);
 
   // 将占位符还原为原始 HTML 标签（支持大小写不敏感的匹配，以及空格插入）
@@ -191,8 +271,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("翻译失败:", error);
+
+    let errorMessage = "翻译失败，请稍后重试";
+
+    if (error instanceof Error) {
+      // 提供更具体的错误信息
+      if (error.message.includes("配额已用完")) {
+        errorMessage = "翻译服务配额已用完，请稍后重试";
+      } else if (error.message.includes("内容过长")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("chunk")) {
+        errorMessage = "翻译长文本时出错，请尝试缩短文本或稍后重试";
+      }
+    }
+
     return NextResponse.json(
-      { success: false, error: "翻译失败，请稍后重试" },
+      { success: false, error: errorMessage },
       { status: 500 },
     );
   }
