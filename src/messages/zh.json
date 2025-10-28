@@ -11,7 +11,9 @@
     "signup": "注册",
     "signout": "退出登录",
     "contact": "联系我们",
-    "about": "关于我们"
+    "about": "关于我们",
+    "telephone": "联系电话",
+    "email": "电子邮箱"
   },
   "home": {
     "welcome": "欢迎，{name}",

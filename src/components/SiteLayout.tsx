@@ -280,8 +280,8 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
                             <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">
                                 {locale === 'zh' ? '联系方式' : 'Contact'}
                             </h3>
-                            <p className="text-sm text-gray-400 mb-2">Email: wang.alex8877@gmail.com</p>
-                            <p className="text-sm text-gray-400 mb-2">联系电话: +86 153 1411 9610</p>
+                            <p className="text-sm text-gray-400 mb-2">{t('nav.email')}: wang.alex8877@gmail.com</p>
+                            <p className="text-sm text-gray-400 mb-2">{t('nav.telephone')}: +86 153 1411 9610</p>
                             <div className="bg-white p-2 inline-block rounded-md">
                                 <img src="/wechat.jpg" alt="WeChat QR Code" className="w-52 h-52" />
                             </div>

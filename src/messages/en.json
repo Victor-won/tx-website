@@ -11,7 +11,9 @@
     "signup": "Sign Up",
     "signout": "Sign Out",
     "contact": "Contact Us",
-    "about": "About Us"
+    "about": "About Us",
+    "telephone": "Telephone",
+    "email": "Email"
   },
   "home": {
     "welcome": "Welcome, {name}",

@@ -49,51 +49,6 @@ export default function AboutPage() {
     },
   ];
 
-  const milestones = [
-    {
-      year: "2024",
-      title: locale === "zh" ? "技术突破" : "Technology Breakthrough",
-      description: locale === "zh"
-        ? "成功研发800G光模块，进入超高速融合通信领域"
-        : "Successfully developed 800G optical modules, entering ultra-high-speed optical communication field",
-    },
-    {
-      year: "2022",
-      title: locale === "zh" ? "全球化布局" : "Global Expansion",
-      description: locale === "zh"
-        ? "在欧美设立研发中心，服务全球客户"
-        : "Established R&D centers in Europe and America, serving global customers",
-    },
-    {
-      year: "2020",
-      title: locale === "zh" ? "产品创新" : "Product Innovation",
-      description: locale === "zh"
-        ? "推出400G数据中心解决方案，获得行业认可"
-        : "Launched 400G data center solutions, gaining industry recognition",
-    },
-    {
-      year: "2018",
-      title: locale === "zh" ? "市场拓展" : "Market Expansion",
-      description: locale === "zh"
-        ? "业务覆盖亚太地区，成为区域领先供应商"
-        : "Expanded business across Asia-Pacific, becoming regional leading supplier",
-    },
-    {
-      year: "2015",
-      title: locale === "zh" ? "技术积累" : "Technology Foundation",
-      description: locale === "zh"
-        ? "建立核心技术团队，奠定研发基础"
-        : "Established core technical team, laying R&D foundation",
-    },
-    {
-      year: "2010",
-      title: locale === "zh" ? "公司成立" : "Company Founded",
-      description: locale === "zh"
-        ? "公司成立，开始融合通信产品研发"
-        : "Company founded, started optical communication product R&D",
-    },
-  ];
-
   const values = [
     {
       icon: Lightbulb,
