@@ -36,7 +36,7 @@ export class ProductService {
           tags: true,
           mediaFiles: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       }),
       prisma.product.count({ where }),
     ]);
@@ -126,5 +126,18 @@ export class ProductService {
     return prisma.product.delete({
       where: { id },
     });
+  }
+
+  static async updateOrder(updates: { id: string; order: number }[]) {
+    // 使用事务批量更新产品排序
+    await prisma.$transaction(
+      updates.map(({ id, order }) =>
+        prisma.product.update({
+          where: { id },
+          data: { order },
+        })
+      )
+    );
+    return { success: true };
   }
 }

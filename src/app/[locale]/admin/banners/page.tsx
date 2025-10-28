@@ -40,6 +40,7 @@ export default function AdminBannersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Banner>>({});
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     fetchBanners();
@@ -162,6 +163,179 @@ export default function AdminBannersPage() {
     }
   };
 
+  const handleAutoTranslate = async () => {
+    // 检查是否有需要翻译的内容
+    const hasContent =
+      formData.title ||
+      formData.description ||
+      formData.highlight ||
+      formData.buttonText;
+
+    if (!hasContent) {
+      alert(locale === "zh" ? "请先填写需要翻译的中文内容" : "Please fill in Chinese content first");
+      return;
+    }
+
+    setTranslating(true);
+    console.log("开始自动翻译...");
+
+    try {
+      type TranslateResult = { field: string; data: any };
+
+      const promises: Promise<TranslateResult>[] = [];
+
+      // 翻译标题
+      if (formData.title) {
+        console.log("准备翻译标题:", formData.title);
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.title,
+              targetLang: "en",
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("标题翻译结果:", data);
+            return { field: "title", data };
+          })
+        );
+      }
+
+      // 翻译描述
+      if (formData.description) {
+        console.log("准备翻译描述:", formData.description);
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.description,
+              targetLang: "en",
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("描述翻译结果:", data);
+            return { field: "description", data };
+          })
+        );
+      }
+
+      // 翻译高亮标签
+      if (formData.highlight) {
+        console.log("准备翻译高亮标签:", formData.highlight);
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.highlight,
+              targetLang: "en",
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("高亮标签翻译结果:", data);
+            return { field: "highlight", data };
+          })
+        );
+      }
+
+      // 翻译按钮文本
+      if (formData.buttonText) {
+        console.log("准备翻译按钮文本:", formData.buttonText);
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.buttonText,
+              targetLang: "en",
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            console.log("按钮文本翻译结果:", data);
+            return { field: "buttonText", data };
+          })
+        );
+      }
+
+      console.log(`等待所有翻译完成... (共 ${promises.length} 个请求)`);
+      const results = await Promise.all(promises);
+      console.log("所有翻译完成:", results);
+
+      // 更新表单数据
+      const updates: Partial<Banner> = {};
+      let translatedCount = 0;
+      let failedFields: string[] = [];
+
+      results.forEach((result) => {
+        if (!result) return;
+
+        if (result.data?.success && result.data?.data?.translatedText) {
+          if (result.field === "title") {
+            updates.titleEn = result.data.data.translatedText;
+            translatedCount++;
+          } else if (result.field === "description") {
+            updates.descriptionEn = result.data.data.translatedText;
+            translatedCount++;
+          } else if (result.field === "highlight") {
+            updates.highlightEn = result.data.data.translatedText;
+            translatedCount++;
+          } else if (result.field === "buttonText") {
+            updates.buttonTextEn = result.data.data.translatedText;
+            translatedCount++;
+          }
+        } else {
+          const fieldNameMap: Record<string, string> = {
+            title: locale === "zh" ? "标题" : "Title",
+            description: locale === "zh" ? "描述" : "Description",
+            highlight: locale === "zh" ? "高亮标签" : "Highlight",
+            buttonText: locale === "zh" ? "按钮文本" : "Button Text",
+          };
+          failedFields.push(fieldNameMap[result.field] || result.field);
+        }
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        ...updates,
+      }));
+
+      console.log("翻译完成，更新了", translatedCount, "个字段");
+
+      // 显示结果
+      if (translatedCount > 0 && failedFields.length === 0) {
+        alert(
+          locale === "zh"
+            ? `翻译成功！已翻译 ${translatedCount} 个字段`
+            : `Translation successful! Translated ${translatedCount} fields`
+        );
+      } else if (translatedCount > 0 && failedFields.length > 0) {
+        alert(
+          locale === "zh"
+            ? `部分翻译成功！已翻译 ${translatedCount} 个字段\n失败字段: ${failedFields.join(", ")}`
+            : `Partial translation successful! Translated ${translatedCount} fields\nFailed fields: ${failedFields.join(", ")}`
+        );
+      } else {
+        alert(
+          locale === "zh"
+            ? "翻译失败，请检查网络连接或稍后重试"
+            : "Translation failed, please check network or try again later"
+        );
+      }
+    } catch (error) {
+      console.error("翻译失败:", error);
+      alert(
+        locale === "zh"
+          ? "翻译失败，请重试\n错误: " + (error instanceof Error ? error.message : String(error))
+          : "Translation failed\nError: " + (error instanceof Error ? error.message : String(error))
+      );
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -192,11 +366,30 @@ export default function AdminBannersPage() {
                   {locale === "zh" ? "添加新轮播图" : "Add New Banner"}
                 </CardTitle>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSave}>
+                  <Button
+                    size="sm"
+                    onClick={handleAutoTranslate}
+                    disabled={translating}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {translating
+                      ? locale === "zh"
+                        ? "翻译中..."
+                        : "Translating..."
+                      : locale === "zh"
+                      ? "🌐 自动翻译"
+                      : "🌐 Auto Translate"}
+                  </Button>
+                  <Button size="sm" onClick={handleSave} disabled={translating}>
                     <Save className="w-4 h-4 mr-1" />
                     {locale === "zh" ? "保存" : "Save"}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={handleCancel}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={translating}
+                  >
                     <X className="w-4 h-4 mr-1" />
                     {locale === "zh" ? "取消" : "Cancel"}
                   </Button>
@@ -262,6 +455,54 @@ export default function AdminBannersPage() {
                         })
                       }
                       rows={3}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">
+                      {locale === "zh" ? "高亮标签（中文）" : "Highlight (Chinese)"}
+                    </label>
+                    <Input
+                      value={formData.highlight || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, highlight: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">
+                      {locale === "zh" ? "高亮标签（英文）" : "Highlight (English)"}
+                    </label>
+                    <Input
+                      value={formData.highlightEn || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, highlightEn: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">
+                      {locale === "zh" ? "按钮文本（中文）" : "Button Text (Chinese)"}
+                    </label>
+                    <Input
+                      value={formData.buttonText || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, buttonText: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">
+                      {locale === "zh" ? "按钮文本（英文）" : "Button Text (English)"}
+                    </label>
+                    <Input
+                      value={formData.buttonTextEn || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, buttonTextEn: e.target.value })
+                      }
                     />
                   </div>
                 </div>
@@ -345,7 +586,21 @@ export default function AdminBannersPage() {
                 <div className="flex gap-2">
                   {editingId === banner.id ? (
                     <>
-                      <Button size="sm" onClick={handleSave}>
+                      <Button
+                        size="sm"
+                        onClick={handleAutoTranslate}
+                        disabled={translating}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {translating
+                          ? locale === "zh"
+                            ? "翻译中..."
+                            : "Translating..."
+                          : locale === "zh"
+                          ? "🌐 自动翻译"
+                          : "🌐 Auto Translate"}
+                      </Button>
+                      <Button size="sm" onClick={handleSave} disabled={translating}>
                         <Save className="w-4 h-4 mr-1" />
                         {locale === "zh" ? "保存" : "Save"}
                       </Button>
@@ -353,6 +608,7 @@ export default function AdminBannersPage() {
                         size="sm"
                         variant="outline"
                         onClick={handleCancel}
+                        disabled={translating}
                       >
                         <X className="w-4 h-4 mr-1" />
                         {locale === "zh" ? "取消" : "Cancel"}
@@ -454,6 +710,54 @@ export default function AdminBannersPage() {
                           })
                         }
                         rows={3}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">
+                        {locale === "zh" ? "高亮标签（中文）" : "Highlight (Chinese)"}
+                      </label>
+                      <Input
+                        value={formData.highlight || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, highlight: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">
+                        {locale === "zh" ? "高亮标签（英文）" : "Highlight (English)"}
+                      </label>
+                      <Input
+                        value={formData.highlightEn || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, highlightEn: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">
+                        {locale === "zh" ? "按钮文本（中文）" : "Button Text (Chinese)"}
+                      </label>
+                      <Input
+                        value={formData.buttonText || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, buttonText: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">
+                        {locale === "zh" ? "按钮文本（英文）" : "Button Text (English)"}
+                      </label>
+                      <Input
+                        value={formData.buttonTextEn || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, buttonTextEn: e.target.value })
+                        }
                       />
                     </div>
                   </div>

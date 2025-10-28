@@ -14,7 +14,7 @@ interface Product {
   id: string;
   name: string;
   nameEn: string | null;
-  slug: string;
+  
   description: string;
   descriptionEn: string | null;
   shortDesc: string | null;
@@ -361,7 +361,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         >
           <div className="flex gap-3">
             <Button variant="secondary" size="sm" className="flex-1 backdrop-blur-md text-xs" asChild>
-              <Link href={`/${locale}/products/${product.slug}`}>
+              <Link href={`/${locale}/products/${product.id}`}>
                 {locale === "zh" ? "查看详情" : "View Details"}
               </Link>
             </Button>
@@ -429,7 +429,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
       <CardFooter className="flex justify-between items-center pt-6 border-t">
         <Button variant="link" size="sm" asChild className="p-0 h-auto text-xs font-semibold group/link">
-          <Link href={`/${locale}/products/${product.slug}`} className="inline-flex items-center gap-1">
+          <Link href={`/${locale}/products/${product.id}`} className="inline-flex items-center gap-1">
             {locale === "zh" ? "了解更多" : "Learn More"}
             <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-1 transition-transform" />
           </Link>

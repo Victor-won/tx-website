@@ -11,7 +11,7 @@ import SolutionSection from "@/components/HomeSolutions";
 export default function Home() {
   const { data: session } = useSession();
   const t = useTranslations();
-  const locale = useLocale();
+//   const locale = useLocale();
 
   return (
       <SiteLayout>

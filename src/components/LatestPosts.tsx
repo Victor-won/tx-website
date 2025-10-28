@@ -12,7 +12,7 @@ interface Post {
   id: string;
   title: string;
   titleEn?: string;
-  slug: string;
+  
   excerpt?: string;
   excerptEn?: string;
   featuredImage?: string;
@@ -93,7 +93,7 @@ export function LatestPosts() {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {post.featuredImage && (
-                <Link href={`/${locale}/posts/${post.slug}`}>
+                <Link href={`/${locale}/posts/${post.id}`}>
                   <div className="relative h-48 overflow-hidden">
                     <img
                       src={post.featuredImage}
@@ -117,7 +117,7 @@ export function LatestPosts() {
                   </Badge>
                 )}
                 <CardTitle className="text-base md:text-lg line-clamp-2 group-hover:text-primary transition-colors font-bold text-gray-900">
-                  <Link href={`/${locale}/posts/${post.slug}`}>
+                  <Link href={`/${locale}/posts/${post.id}`}>
                     {title}
                   </Link>
                 </CardTitle>
@@ -141,7 +141,7 @@ export function LatestPosts() {
                   </time>
                 </div>
                 <Button variant="ghost" size="sm" asChild className="h-8 text-xs">
-                  <Link href={`/${locale}/posts/${post.slug}`} className="inline-flex items-center gap-1">
+                  <Link href={`/${locale}/posts/${post.id}`} className="inline-flex items-center gap-1">
                     {locale === "zh" ? "阅读" : "Read"}
                     <ArrowRight className="w-3 h-3" />
                   </Link>

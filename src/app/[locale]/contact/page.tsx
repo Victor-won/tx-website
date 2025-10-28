@@ -36,31 +36,24 @@ export default function ContactPage() {
   const contactInfo = [
     {
       icon: MapPin,
-      title: locale === "zh" ? "公司地址" : "Address",
+      title: locale === "zh" ? "地址" : "Address",
       content: locale === "zh"
-        ? "中国·深圳市南山区科技园南区软件产业基地"
-        : "Software Industry Base, Nanshan District, Shenzhen, China",
+        ? "中国·江苏·南京市栖霞区软件产业基地5栋"
+        : "Building 5, Software Industry Base, Qixia District, Nanjing, Jiangsu, China",
       link: "https://maps.google.com",
     },
     {
       icon: Phone,
       title: locale === "zh" ? "联系电话" : "Phone",
-      content: "+86 755 8888 8888",
-      link: "tel:+8675588888888",
+      content: "+86 15314119610",
+      link: "tel:+8615314119610",
     },
     {
       icon: Mail,
       title: locale === "zh" ? "电子邮箱" : "Email",
-      content: "contact@example.com",
-      link: "mailto:contact@example.com",
-    },
-    {
-      icon: Clock,
-      title: locale === "zh" ? "工作时间" : "Business Hours",
-      content: locale === "zh"
-        ? "周一至周五 9:00-18:00"
-        : "Monday - Friday 9:00-18:00",
-    },
+      content: "wang.alex8877@gmail.com",
+      link: "mailto:wang.alex8877@gmail.com",
+    }
   ];
 
   const officeLocations = [
@@ -350,53 +343,6 @@ export default function ContactPage() {
                   )}
                 </CardContent>
               </Card>
-            </div>
-          </div>
-
-          {/* Office Locations */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {locale === "zh" ? "办公地点" : "Office Locations"}
-              </h2>
-              <p className="text-lg text-gray-600">
-                {locale === "zh"
-                  ? "我们在全国多个城市设有办事处"
-                  : "We have offices in multiple cities"}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {officeLocations.map((office, index) => (
-                <Card key={index} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-primary" />
-                      </div>
-                      <CardTitle className="text-xl">{office.city}</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-600">{office.address}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-5 h-5 text-gray-400" />
-                      <a href={`tel:${office.phone}`} className="text-sm text-gray-600 hover:text-primary">
-                        {office.phone}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-5 h-5 text-gray-400" />
-                      <a href={`mailto:${office.email}`} className="text-sm text-gray-600 hover:text-primary">
-                        {office.email}
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </div>
 

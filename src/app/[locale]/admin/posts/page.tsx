@@ -20,7 +20,6 @@ interface Post {
   id: string;
   title: string;
   titleEn?: string;
-  slug: string;
   content: string;
   contentEn?: string;
   excerpt?: string;
@@ -52,7 +51,6 @@ interface Category {
 interface FormData {
   title: string;
   titleEn: string;
-  slug: string;
   content: string;
   contentEn: string;
   excerpt: string;
@@ -86,7 +84,6 @@ export default function PostsPage() {
   const [formData, setFormData] = useState<FormData>({
     title: "",
     titleEn: "",
-    slug: "",
     content: "",
     contentEn: "",
     excerpt: "",
@@ -165,10 +162,6 @@ export default function PostsPage() {
     // 验证必填字段
     if (!formData.title.trim()) {
       errors.title = "标题(中文)不能为空";
-    }
-
-    if (!formData.slug.trim()) {
-      errors.slug = "Slug不能为空";
     }
 
     if (!formData.content.trim()) {
@@ -286,7 +279,6 @@ export default function PostsPage() {
         body: JSON.stringify({
           title: `${post.title} (副本)`,
           titleEn: post.titleEn ? `${post.titleEn} (Copy)` : "",
-          slug: `${post.slug}-copy-${Date.now()}`,
           content: post.content,
           contentEn: post.contentEn || "",
           excerpt: post.excerpt || "",
@@ -312,8 +304,8 @@ export default function PostsPage() {
     }
   };
 
-  const handleViewPost = (slug: string) => {
-    window.open(`/${locale}/posts/${slug}`, "_blank");
+  const handleViewPost = (id: string) => {
+    window.open(`/${locale}/posts/${id}`, "_blank");
   };
 
   const openEditDialog = (post: Post) => {
@@ -321,7 +313,6 @@ export default function PostsPage() {
     setFormData({
       title: post.title,
       titleEn: post.titleEn || "",
-      slug: post.slug,
       content: post.content,
       contentEn: post.contentEn || "",
       excerpt: post.excerpt || "",
@@ -342,7 +333,6 @@ export default function PostsPage() {
     setFormData({
       title: "",
       titleEn: "",
-      slug: "",
       content: "",
       contentEn: "",
       excerpt: "",
@@ -354,20 +344,10 @@ export default function PostsPage() {
     setFormErrors({});
   };
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim();
-  };
-
   const handleTitleChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
       title: value,
-      slug: generateSlug(value),
     }));
   };
 
@@ -375,7 +355,6 @@ export default function PostsPage() {
     setFormData((prev) => ({
       ...prev,
       titleEn: value,
-      slug: prev.title ? generateSlug(prev.title) : generateSlug(value),
     }));
   };
 
@@ -619,21 +598,6 @@ export default function PostsPage() {
                               </div>
                           </div>
 
-                          <div>
-                              <label className="block text-sm font-medium mb-1">
-                                  Slug <span className="text-red-600">*</span>
-                              </label>
-                              <input
-                                  type="text"
-                                  className={`w-full px-3 py-2 border rounded bg-gray-50 ${
-                                      formErrors.slug ? 'border-red-500' : ''
-                                  }`}
-                                  value={formData.slug}
-                                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                              />
-                              {formErrors.slug && <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>}
-                          </div>
-
                           <div className="grid grid-cols-2 gap-4">
                               <div>
                                   <label className="block text-sm font-medium mb-1">摘要 (中文)</label>
@@ -680,26 +644,6 @@ export default function PostsPage() {
                                       }
                                   />
                               </div>
-                          </div>
-
-                          <div className="flex justify-end">
-                              <button
-                                  type="button"
-                                  onClick={() => handleAutoTranslate()}
-                                  disabled={translating}
-                                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                              >
-                                  {translating ? (
-                                      <>
-                                          <span className="animate-spin">⟳</span>
-                                          翻译中{' '}
-                                          {translationProgress.total > 0 &&
-                                              `(${translationProgress.current}/${translationProgress.total})`}
-                                      </>
-                                  ) : (
-                                      <>🌐 批量翻译所有字段</>
-                                  )}
-                              </button>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
@@ -814,6 +758,23 @@ export default function PostsPage() {
                               取消
                           </button>
                           <button
+                              type="button"
+                              onClick={() => handleAutoTranslate()}
+                              disabled={translating}
+                              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          >
+                              {translating ? (
+                                  <>
+                                      <span className="animate-spin">⟳</span>
+                                      翻译中{' '}
+                                      {translationProgress.total > 0 &&
+                                          `(${translationProgress.current}/${translationProgress.total})`}
+                                  </>
+                              ) : (
+                                  <>🌐 批量翻译所有字段</>
+                              )}
+                          </button>
+                          <button
                               onClick={handleCreatePost}
                               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                           >
@@ -887,7 +848,7 @@ export default function PostsPage() {
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                       <button
-                                          onClick={() => handleViewPost(post.slug)}
+                                          onClick={() => handleViewPost(post.id)}
                                           className="text-indigo-600 hover:text-indigo-900 mr-4"
                                           title="在新标签页中查看前台详情页"
                                       >
@@ -974,21 +935,6 @@ export default function PostsPage() {
                           </div>
                       </div>
 
-                      <div>
-                          <label className="block text-sm font-medium mb-1">
-                              Slug <span className="text-red-600">*</span>
-                          </label>
-                          <input
-                              type="text"
-                              className={`w-full px-3 py-2 border rounded bg-gray-50 ${
-                                  formErrors.slug ? 'border-red-500' : ''
-                              }`}
-                              value={formData.slug}
-                              onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                          />
-                          {formErrors.slug && <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>}
-                      </div>
-
                       <div className="grid grid-cols-2 gap-4">
                           <div>
                               <label className="block text-sm font-medium mb-1">摘要 (中文)</label>
@@ -1018,24 +964,6 @@ export default function PostsPage() {
                                   }
                               />
                           </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                          <button
-                              type="button"
-                              onClick={() => handleAutoTranslate()}
-                              disabled={translating}
-                              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                          >
-                              {translating ? (
-                                  <>
-                                      <span className="animate-spin">⟳</span>
-                                      翻译中...
-                                  </>
-                              ) : (
-                                  <>🌐 自动翻译为英文</>
-                              )}
-                          </button>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -1135,6 +1063,21 @@ export default function PostsPage() {
                           取消
                       </button>
                       <button
+                          type="button"
+                          onClick={() => handleAutoTranslate()}
+                          disabled={translating}
+                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                          {translating ? (
+                              <>
+                                  <span className="animate-spin">⟳</span>
+                                  翻译中...
+                              </>
+                          ) : (
+                              <>🌐 自动翻译为英文</>
+                          )}
+                      </button>
+                      <button
                           onClick={handleUpdatePost}
                           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
@@ -1146,11 +1089,11 @@ export default function PostsPage() {
 
           {/* Delete Dialog */}
           <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-              <DialogContent>
+              <DialogContent className="max-w-sm">
                   <DialogHeader>
                       <DialogTitle>确认删除</DialogTitle>
                   </DialogHeader>
-                  <p className="py-4">确定要删除文章 &quot;{currentPost?.title}&quot; 吗？此操作无法撤销。</p>
+                  <p className="py-4 px-5">确定要删除文章 &quot;{currentPost?.title}&quot; 吗？此操作无法撤销。</p>
                   <DialogFooter>
                       <button
                           onClick={() => {

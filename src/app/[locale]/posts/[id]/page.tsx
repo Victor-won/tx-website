@@ -9,7 +9,6 @@ interface Post {
   id: string;
   title: string;
   titleEn?: string;
-  slug: string;
   content: string;
   contentEn?: string;
   excerpt?: string;
@@ -20,7 +19,6 @@ interface Post {
     id: string;
     name: string;
     nameEn?: string;
-    slug: string;
   };
   author: {
     id: string;
@@ -34,16 +32,16 @@ interface Post {
 
 interface PostPageProps {
   params: Promise<{
-    slug: string;
+    id: string;
     locale: string;
   }>;
 }
 
-async function getPostBySlug(slug: string): Promise<Post | null> {
+async function getPostById(id: string): Promise<Post | null> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   try {
-    const response = await fetch(`${baseUrl}/api/posts?slug=${slug}`, {
+    const response = await fetch(`${baseUrl}/api/posts/${id}`, {
       cache: "no-store",
     });
 
@@ -52,8 +50,7 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
     }
 
     const data = await response.json();
-    const posts = data.data || [];
-    return posts.find((p: Post) => p.slug === slug && p.status === "PUBLISHED") || null;
+    return data.success && data.data ? data.data : null;
   } catch (error) {
     console.error("Error fetching post:", error);
     return null;
@@ -87,7 +84,7 @@ function RelatedPostCard({ post, locale }: { post: Post; locale: string }) {
 
   return (
     <Link
-      href={`/${locale}/posts/${post.slug}`}
+      href={`/${locale}/posts/${post.id}`}
       className="group flex gap-4 bg-white rounded-lg p-4 hover:shadow-md transition-shadow"
     >
       {post.featuredImage && (
@@ -113,9 +110,9 @@ function RelatedPostCard({ post, locale }: { post: Post; locale: string }) {
 
 export default async function PostPage({ params }: PostPageProps) {
   const resolvedParams = await params;
-  const { slug, locale } = resolvedParams;
+  const { id, locale } = resolvedParams;
 
-  const post = await getPostBySlug(slug);
+  const post = await getPostById(id);
 
   if (!post) {
     notFound();
@@ -279,8 +276,8 @@ export default async function PostPage({ params }: PostPageProps) {
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PostPageProps) {
   const resolvedParams = await params;
-  const { slug, locale } = resolvedParams;
-  const post = await getPostBySlug(slug);
+  const { id, locale } = resolvedParams;
+  const post = await getPostById(id);
 
   if (!post) {
     return {

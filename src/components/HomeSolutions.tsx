@@ -2,9 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowRight, Cpu, Shield, Server, Building } from "lucide-react";
+import { ArrowRight, Cpu, Shield, Server, Building, Zap, Globe, Database, Cloud, Lock, Smartphone, Check } from "lucide-react";
+
+interface Feature {
+  text: string;
+  textEn?: string;
+  description: string;
+  descriptionEn?: string;
+}
 
 interface Solution {
     id: string;
@@ -15,7 +23,7 @@ interface Solution {
     icon: string;
     color: string;
     iconBg: string;
-    features: Array<string | { text: string; textEn?: string }> | null;
+    features: Feature[] | null;
 }
 
 const iconMap: { [key: string]: any } = {
@@ -23,6 +31,12 @@ const iconMap: { [key: string]: any } = {
     Shield,
     Server,
     Building,
+    Zap,
+    Globe,
+    Database,
+    Cloud,
+    Lock,
+    Smartphone,
 };
 
 export default function SolutionSection() {
@@ -36,6 +50,7 @@ export default function SolutionSection() {
                 const response = await fetch("/api/solutions?status=true");
                 const data = await response.json();
                 if (data.success) {
+                    console.log("获取解决方案成功:", data.data);
                     setSolutions(data.data);
                 }
             } catch (error) {
@@ -68,7 +83,7 @@ export default function SolutionSection() {
         <div className="py-16 bg-white">
             <div className="container mx-auto px-4">
                 {/* 标题部分 */}
-                <div className="text-center mb-16 max-w-3xl mx-auto">
+                <div className="text-center mb-16 max-w-4xl mx-auto">
                     <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
                         {locale === "zh" ? "全面的通信解决方案" : "Comprehensive Communication Solutions"}
                     </h2>
@@ -83,7 +98,7 @@ export default function SolutionSection() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-16">
                     {solutions.map((solution, index) => {
                         const Icon = iconMap[solution.icon] || Cpu;
-                        const title = locale === "en" && solution.titleEn ? solution.titleEn : solution.title;
+                        const title = locale === 'en' && solution.titleEn ? solution.titleEn : solution.title;
                         const description = locale === "en" && solution.descriptionEn ? solution.descriptionEn : solution.description;
 
                         return (
@@ -92,7 +107,7 @@ export default function SolutionSection() {
                                 className="group hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border-gray-100/50"
                             >
                                 <CardHeader>
-                                    <div className="flex items-start gap-5 mb-4">
+                                    <div className="flex items-center gap-5 mb-4">
                                         <div
                                             className={`w-14 h-14 ${solution.iconBg} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105`}
                                         >
@@ -112,15 +127,14 @@ export default function SolutionSection() {
                                     {solution.features && Array.isArray(solution.features) && solution.features.length > 0 && (
                                         <ul className="space-y-3">
                                             {solution.features.map((feature, idx) => {
-                                                // 处理两种格式：字符串或对象
-                                                const featureText = typeof feature === 'string'
-                                                    ? feature
-                                                    : (locale === "en" && feature.textEn ? feature.textEn : feature.text);
+                                                const featureTitle = locale === "en" && feature.textEn
+                                                    ? feature.textEn
+                                                    : feature.text;
 
                                                 return (
                                                     <li key={idx} className="flex items-start gap-2">
                                                         <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                                                        <span className="text-sm text-gray-700">{featureText}</span>
+                                                        <span className="text-sm text-gray-700">{featureTitle}</span>
                                                     </li>
                                                 );
                                             })}
@@ -129,10 +143,10 @@ export default function SolutionSection() {
 
                                     {/* 行动按钮 */}
                                     <Button variant="outline" className="w-full group/btn" asChild>
-                                        <a href={`/${locale}/posts`}>
+                                        <Link href={`/${locale}/solutions`}>
                                             {locale === "zh" ? "了解更多" : "Learn More"}
                                             <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                                        </a>
+                                        </Link>
                                     </Button>
                                 </CardContent>
                             </Card>

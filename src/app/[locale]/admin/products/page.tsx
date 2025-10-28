@@ -17,6 +17,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { Specification, Feature } from "@/types";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Move } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +42,6 @@ interface Product {
   id: string;
   name: string;
   nameEn: string | null;
-  slug: string;
   description: string;
   descriptionEn: string | null;
   shortDesc: string | null;
@@ -49,6 +66,7 @@ interface Product {
     name: string;
     nameEn: string | null;
   } | null;
+  order: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -63,7 +81,6 @@ interface Category {
 interface ProductFormData {
   name: string;
   nameEn: string;
-  slug: string;
   description: string;
   descriptionEn: string;
   shortDesc: string;
@@ -77,12 +94,293 @@ interface ProductFormData {
   features: Feature[];
   price: string;
   salePrice: string;
-  sku: string;
   stock: string;
   status: string;
   featuredImage: string;
   images: string[];
   categoryId: string;
+}
+
+// 可拖拽的规格项组件
+function SortableSpecificationItem({
+  spec,
+  index,
+  onUpdate,
+  onRemove,
+}: {
+  spec: Specification;
+  index: number;
+  onUpdate: (index: number, field: keyof Specification, value: string) => void;
+  onRemove: (index: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `spec-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-lg p-4 space-y-2 ${isDragging ? "bg-gray-50" : ""}`}
+    >
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-move text-gray-400 hover:text-gray-600"
+            title="拖拽排序"
+          >
+            <Move />
+          </div>
+          <span className="text-sm font-medium">规格 {index + 1}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="text-red-600 hover:text-red-800 text-sm"
+        >
+          删除
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          placeholder="规格名 (中文)"
+          value={spec.name}
+          onChange={(e) => onUpdate(index, "name", e.target.value)}
+        />
+        <Input
+          placeholder="规格名 (英文)"
+          value={spec.nameEn || ""}
+          onChange={(e) => onUpdate(index, "nameEn", e.target.value)}
+        />
+        <Input
+          placeholder="规格值 (中文)"
+          value={spec.value}
+          onChange={(e) => onUpdate(index, "value", e.target.value)}
+        />
+        <Input
+          placeholder="规格值 (英文)"
+          value={spec.valueEn || ""}
+          onChange={(e) => onUpdate(index, "valueEn", e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
+
+// 可拖拽的特性项组件
+function SortableFeatureItem({
+  feature,
+  index,
+  onUpdate,
+  onRemove,
+}: {
+  feature: Feature;
+  index: number;
+  onUpdate: (index: number, field: keyof Feature, value: string) => void;
+  onRemove: (index: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `feature-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-lg p-4 space-y-2 ${isDragging ? "bg-gray-50" : ""}`}
+    >
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-move text-gray-400 hover:text-gray-600"
+            title="拖拽排序"
+          >
+            <Move />
+          </div>
+          <span className="text-sm font-medium">特性 {index + 1}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="text-red-600 hover:text-red-800 text-sm"
+        >
+          删除
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          placeholder="特性标题 (中文)"
+          value={feature.title}
+          onChange={(e) => onUpdate(index, "title", e.target.value)}
+        />
+        <Input
+          placeholder="特性标题 (英文)"
+          value={feature.titleEn || ""}
+          onChange={(e) => onUpdate(index, "titleEn", e.target.value)}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <textarea
+          placeholder="特性描述 (中文)"
+          value={feature.description}
+          onChange={(e) => onUpdate(index, "description", e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+        />
+        <textarea
+          placeholder="特性描述 (英文)"
+          value={feature.descriptionEn || ""}
+          onChange={(e) => onUpdate(index, "descriptionEn", e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
+        />
+      </div>
+      <Input
+        placeholder="图标 (可选)"
+        value={feature.icon || ""}
+        onChange={(e) => onUpdate(index, "icon", e.target.value)}
+      />
+    </div>
+  );
+}
+
+// 可拖拽的表格行组件
+function SortableProductRow({
+  product,
+  locale,
+  onView,
+  onEdit,
+  onCopy,
+  onDelete,
+}: {
+  product: Product;
+  locale: string;
+  onView: (id: string) => void;
+  onEdit: (product: Product) => void;
+  onCopy: (product: Product) => void;
+  onDelete: (product: Product) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style} className={isDragging ? "bg-gray-50" : ""}>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-move text-gray-400 hover:text-gray-600"
+          title="拖拽排序"
+        >
+          <Move />
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          {product.featuredImage && (
+            <img
+              src={product.featuredImage}
+              alt={product.name}
+              className="w-10 h-10 rounded-md object-cover mr-3"
+            />
+          )}
+          <div>
+            <div className="text-sm font-medium text-gray-900">{product.name}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-500">{product.category?.name || "-"}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">¥{product.price}</div>
+        {product.salePrice && (
+          <div className="text-sm text-red-600">¥{product.salePrice}</div>
+        )}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span
+          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+            product.status === "ACTIVE"
+              ? "bg-green-100 text-green-800"
+              : product.status === "INACTIVE"
+              ? "bg-gray-100 text-gray-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {product.status === "ACTIVE"
+            ? "正常"
+            : product.status === "INACTIVE"
+            ? "下架"
+            : "缺货"}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+        <button
+          onClick={() => onView(product.id)}
+          className="text-indigo-600 hover:text-indigo-900 mr-4"
+          title="在新标签页中查看前台详情页"
+        >
+          查看
+        </button>
+        <button
+          onClick={() => onEdit(product)}
+          className="text-blue-600 hover:text-blue-900 mr-4"
+        >
+          编辑
+        </button>
+        <button
+          onClick={() => onCopy(product)}
+          className="text-green-600 hover:text-green-900 mr-4"
+        >
+          复制
+        </button>
+        <button
+          onClick={() => onDelete(product)}
+          className="text-red-600 hover:text-red-900"
+        >
+          删除
+        </button>
+      </td>
+    </tr>
+  );
 }
 
 export default function ProductsPage() {
@@ -102,7 +400,6 @@ export default function ProductsPage() {
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     nameEn: "",
-    slug: "",
     description: "",
     descriptionEn: "",
     shortDesc: "",
@@ -116,7 +413,6 @@ export default function ProductsPage() {
     features: [],
     price: "",
     salePrice: "",
-    sku: "",
     stock: "0",
     status: "ACTIVE",
     featuredImage: "",
@@ -127,12 +423,84 @@ export default function ProductsPage() {
   const [translating, setTranslating] = useState(false);
   const [formErrors, setFormErrors] = useState<{
     name?: string;
-    slug?: string;
     description?: string;
     price?: string;
-    sku?: string;
     stock?: string;
   }>({});
+
+  // 拖拽传感器配置
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // 处理拖拽结束
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = products.findIndex((p) => p.id === active.id);
+      const newIndex = products.findIndex((p) => p.id === over.id);
+
+      // 更新本地状态
+      const newProducts = arrayMove(products, oldIndex, newIndex);
+      setProducts(newProducts);
+
+      // 准备更新数据
+      const updates = newProducts.map((product, index) => ({
+        id: product.id,
+        order: index,
+      }));
+
+      // 发送到后端保存
+      try {
+        const response = await fetch("/api/products/order", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates }),
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          // 如果保存失败，恢复原来的顺序
+          fetchProducts();
+          alert("保存排序失败，请重试");
+        }
+      } catch (error) {
+        console.error("保存排序失败:", error);
+        fetchProducts();
+        alert("保存排序失败，请重试");
+      }
+    }
+  };
+
+  // 处理规格拖拽结束
+  const handleSpecificationDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const activeIndex = parseInt(String(active.id).replace("spec-", ""));
+      const overIndex = parseInt(String(over.id).replace("spec-", ""));
+
+      const newSpecifications = arrayMove(formData.specifications, activeIndex, overIndex);
+      setFormData({ ...formData, specifications: newSpecifications });
+    }
+  };
+
+  // 处理特性拖拽结束
+  const handleFeatureDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const activeIndex = parseInt(String(active.id).replace("feature-", ""));
+      const overIndex = parseInt(String(over.id).replace("feature-", ""));
+
+      const newFeatures = arrayMove(formData.features, activeIndex, overIndex);
+      setFormData({ ...formData, features: newFeatures });
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -180,20 +548,11 @@ export default function ProductsPage() {
     setCurrentPage(1);
   };
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w\-\u4e00-\u9fa5]+/g, "");
-  };
-
   const validateForm = (): boolean => {
     const errors: {
       name?: string;
-      slug?: string;
       description?: string;
       price?: string;
-      sku?: string;
       stock?: string;
     } = {};
 
@@ -202,16 +561,8 @@ export default function ProductsPage() {
       errors.name = "产品名称(中文)不能为空";
     }
 
-    if (!formData.slug.trim()) {
-      errors.slug = "Slug不能为空";
-    }
-
     if (!formData.description.trim()) {
       errors.description = "产品描述(中文)不能为空";
-    }
-
-    if (!formData.sku.trim()) {
-      errors.sku = "SKU不能为空";
     }
 
     if (!formData.price || parseFloat(formData.price) < 0) {
@@ -519,7 +870,6 @@ export default function ProductsPage() {
       const payload = {
         name: formData.name,
         nameEn: formData.nameEn || undefined,
-        slug: formData.slug,
         description: formData.description,
         descriptionEn: formData.descriptionEn || undefined,
         shortDesc: formData.shortDesc || undefined,
@@ -533,7 +883,6 @@ export default function ProductsPage() {
         features: formData.features.length > 0 ? formData.features : undefined,
         price: parseFloat(formData.price),
         salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
-        sku: formData.sku,
         stock: parseInt(formData.stock),
         status: formData.status,
         featuredImage: formData.featuredImage || undefined,
@@ -581,7 +930,6 @@ export default function ProductsPage() {
       const payload = {
         name: formData.name,
         nameEn: formData.nameEn || undefined,
-        slug: formData.slug,
         description: formData.description,
         descriptionEn: formData.descriptionEn || undefined,
         shortDesc: formData.shortDesc || undefined,
@@ -595,7 +943,6 @@ export default function ProductsPage() {
         features: formData.features.length > 0 ? formData.features : undefined,
         price: parseFloat(formData.price),
         salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
-        sku: formData.sku,
         stock: parseInt(formData.stock),
         status: formData.status,
         featuredImage: formData.featuredImage || undefined,
@@ -661,7 +1008,6 @@ export default function ProductsPage() {
       const payload = {
         name: `${product.name} (副本)`,
         nameEn: product.nameEn ? `${product.nameEn} (Copy)` : undefined,
-        slug: `${product.slug}-copy-${Date.now()}`,
         description: product.description,
         descriptionEn: product.descriptionEn || undefined,
         shortDesc: product.shortDesc || undefined,
@@ -675,7 +1021,6 @@ export default function ProductsPage() {
         features: product.features || undefined,
         price: product.price,
         salePrice: product.salePrice || undefined,
-        sku: `${product.sku}-COPY-${Date.now()}`,
         stock: product.stock,
         status: "INACTIVE",
         featuredImage: product.featuredImage || undefined,
@@ -705,8 +1050,8 @@ export default function ProductsPage() {
     }
   };
 
-  const handleViewProduct = (slug: string) => {
-    window.open(`/${locale}/products/${slug}`, "_blank");
+  const handleViewProduct = (id: string) => {
+    window.open(`/${locale}/products/${id}`, "_blank");
   };
 
   const openEditDialog = (product: Product) => {
@@ -714,7 +1059,6 @@ export default function ProductsPage() {
     setFormData({
       name: product.name,
       nameEn: product.nameEn || "",
-      slug: product.slug,
       description: product.description,
       descriptionEn: product.descriptionEn || "",
       shortDesc: product.shortDesc || "",
@@ -728,7 +1072,6 @@ export default function ProductsPage() {
       features: (product.features as Feature[]) || [],
       price: product.price.toString(),
       salePrice: product.salePrice?.toString() || "",
-      sku: product.sku,
       stock: product.stock.toString(),
       status: product.status,
       featuredImage: product.featuredImage || "",
@@ -747,7 +1090,6 @@ export default function ProductsPage() {
     setFormData({
       name: "",
       nameEn: "",
-      slug: "",
       description: "",
       descriptionEn: "",
       shortDesc: "",
@@ -761,7 +1103,6 @@ export default function ProductsPage() {
       features: [],
       price: "",
       salePrice: "",
-      sku: "",
       stock: "0",
       status: "ACTIVE",
       featuredImage: "",
@@ -858,19 +1199,6 @@ export default function ProductsPage() {
                       </DialogHeader>
                       <form onSubmit={handleCreateProduct} className="flex flex-col flex-1 overflow-hidden">
                           <div className="space-y-6 py-4 px-6 overflow-y-auto flex-1">
-                              {/* 翻译按钮 */}
-                              <div className="flex justify-end">
-                                  <Button
-                                      type="button"
-                                      onClick={handleAutoTranslate}
-                                      disabled={translating || formLoading}
-                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                      size="sm"
-                                  >
-                                      {translating ? '翻译中...' : '🌐 自动翻译为英文'}
-                                  </Button>
-                              </div>
-
                               {/* 基本信息 */}
                               <div className="space-y-4">
                                   <h3 className="text-lg font-medium">基本信息</h3>
@@ -883,14 +1211,7 @@ export default function ProductsPage() {
                                           <Input
                                               id="create-name"
                                               value={formData.name}
-                                              onChange={(e) => {
-                                                  const name = e.target.value;
-                                                  setFormData({
-                                                      ...formData,
-                                                      name,
-                                                      slug: generateSlug(name),
-                                                  });
-                                              }}
+                                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                               required
                                               className={formErrors.name ? 'border-red-500' : ''}
                                           />
@@ -910,53 +1231,20 @@ export default function ProductsPage() {
                                   </div>
 
                                   <div className="space-y-2">
-                                      <Label htmlFor="create-slug">
-                                          Slug <span className="text-red-600">*</span>
-                                      </Label>
-                                      <Input
-                                          id="create-slug"
-                                          value={formData.slug}
-                                          onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                          required
-                                          className={formErrors.slug ? 'border-red-500' : ''}
-                                      />
-                                      {formErrors.slug && (
-                                          <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>
-                                      )}
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-4">
-                                      <div className="space-y-2">
-                                          <Label htmlFor="create-sku">
-                                              SKU <span className="text-red-600">*</span>
-                                          </Label>
-                                          <Input
-                                              id="create-sku"
-                                              value={formData.sku}
-                                              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                              required
-                                              className={formErrors.sku ? 'border-red-500' : ''}
-                                          />
-                                          {formErrors.sku && (
-                                              <p className="text-red-500 text-sm mt-1">{formErrors.sku}</p>
-                                          )}
-                                      </div>
-                                      <div className="space-y-2">
-                                          <Label htmlFor="create-category">分类</Label>
-                                          <select
-                                              id="create-category"
-                                              value={formData.categoryId}
-                                              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                              className="w-full border border-gray-300 rounded-md px-3 py-2"
-                                          >
-                                              <option value="">无分类</option>
-                                              {categories.map((cat) => (
-                                                  <option key={cat.id} value={cat.id}>
-                                                      {cat.name}
-                                                  </option>
-                                              ))}
-                                          </select>
-                                      </div>
+                                      <Label htmlFor="create-category">分类</Label>
+                                      <select
+                                          id="create-category"
+                                          value={formData.categoryId}
+                                          onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                      >
+                                          <option value="">无分类</option>
+                                          {categories.map((cat) => (
+                                              <option key={cat.id} value={cat.id}>
+                                                  {cat.name}
+                                              </option>
+                                          ))}
+                                      </select>
                                   </div>
 
                                   <div className="space-y-2">
@@ -981,7 +1269,7 @@ export default function ProductsPage() {
                                       />
                                   </div>
 
-                                  <div className="grid grid-cols-2 gap-4">
+                                  {/* <div className="grid grid-cols-2 gap-4">
                                       <div className="space-y-2">
                                           <Label htmlFor="create-tag">产品标签 (中文)</Label>
                                           <Input
@@ -1039,7 +1327,7 @@ export default function ProductsPage() {
                                           onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
                                           placeholder="5.0"
                                       />
-                                  </div>
+                                  </div> */}
                               </div>
 
                               {/* 详细描述 */}
@@ -1186,44 +1474,26 @@ export default function ProductsPage() {
                                       </Button>
                                   </div>
 
-                                  {formData.specifications.map((spec, index) => (
-                                      <div key={index} className="border rounded-lg p-4 space-y-2">
-                                          <div className="flex justify-between items-center">
-                                              <span className="text-sm font-medium">规格 {index + 1}</span>
-                                              <button
-                                                  type="button"
-                                                  onClick={() => removeSpecification(index)}
-                                                  className="text-red-600 hover:text-red-800 text-sm"
-                                              >
-                                                  删除
-                                              </button>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              <Input
-                                                  placeholder="规格名 (中文)"
-                                                  value={spec.name}
-                                                  onChange={(e) => updateSpecification(index, 'name', e.target.value)}
+                                  <DndContext
+                                      sensors={sensors}
+                                      collisionDetection={closestCenter}
+                                      onDragEnd={handleSpecificationDragEnd}
+                                  >
+                                      <SortableContext
+                                          items={formData.specifications.map((_, i) => `spec-${i}`)}
+                                          strategy={verticalListSortingStrategy}
+                                      >
+                                          {formData.specifications.map((spec, index) => (
+                                              <SortableSpecificationItem
+                                                  key={`spec-${index}`}
+                                                  spec={spec}
+                                                  index={index}
+                                                  onUpdate={updateSpecification}
+                                                  onRemove={removeSpecification}
                                               />
-                                              <Input
-                                                  placeholder="规格名 (英文)"
-                                                  value={spec.nameEn || ''}
-                                                  onChange={(e) => updateSpecification(index, 'nameEn', e.target.value)}
-                                              />
-                                              <Input
-                                                  placeholder="规格值 (中文)"
-                                                  value={spec.value}
-                                                  onChange={(e) => updateSpecification(index, 'value', e.target.value)}
-                                              />
-                                              <Input
-                                                  placeholder="规格值 (英文)"
-                                                  value={spec.valueEn || ''}
-                                                  onChange={(e) =>
-                                                      updateSpecification(index, 'valueEn', e.target.value)
-                                                  }
-                                              />
-                                          </div>
-                                      </div>
-                                  ))}
+                                          ))}
+                                      </SortableContext>
+                                  </DndContext>
                               </div>
 
                               {/* 产品特性 */}
@@ -1235,53 +1505,26 @@ export default function ProductsPage() {
                                       </Button>
                                   </div>
 
-                                  {formData.features.map((feature, index) => (
-                                      <div key={index} className="border rounded-lg p-4 space-y-2">
-                                          <div className="flex justify-between items-center">
-                                              <span className="text-sm font-medium">特性 {index + 1}</span>
-                                              <button
-                                                  type="button"
-                                                  onClick={() => removeFeature(index)}
-                                                  className="text-red-600 hover:text-red-800 text-sm"
-                                              >
-                                                  删除
-                                              </button>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              <Input
-                                                  placeholder="特性标题 (中文)"
-                                                  value={feature.title}
-                                                  onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                                  <DndContext
+                                      sensors={sensors}
+                                      collisionDetection={closestCenter}
+                                      onDragEnd={handleFeatureDragEnd}
+                                  >
+                                      <SortableContext
+                                          items={formData.features.map((_, i) => `feature-${i}`)}
+                                          strategy={verticalListSortingStrategy}
+                                      >
+                                          {formData.features.map((feature, index) => (
+                                              <SortableFeatureItem
+                                                  key={`feature-${index}`}
+                                                  feature={feature}
+                                                  index={index}
+                                                  onUpdate={updateFeature}
+                                                  onRemove={removeFeature}
                                               />
-                                              <Input
-                                                  placeholder="特性标题 (英文)"
-                                                  value={feature.titleEn || ''}
-                                                  onChange={(e) => updateFeature(index, 'titleEn', e.target.value)}
-                                              />
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              <textarea
-                                                  placeholder="特性描述 (中文)"
-                                                  value={feature.description}
-                                                  onChange={(e) => updateFeature(index, 'description', e.target.value)}
-                                                  className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                                              />
-                                              <textarea
-                                                  placeholder="特性描述 (英文)"
-                                                  value={feature.descriptionEn || ''}
-                                                  onChange={(e) =>
-                                                      updateFeature(index, 'descriptionEn', e.target.value)
-                                                  }
-                                                  className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                                              />
-                                          </div>
-                                          <Input
-                                              placeholder="图标 (可选)"
-                                              value={feature.icon || ''}
-                                              onChange={(e) => updateFeature(index, 'icon', e.target.value)}
-                                          />
-                                      </div>
-                                  ))}
+                                          ))}
+                                      </SortableContext>
+                                  </DndContext>
                               </div>
                           </div>
                           <DialogFooter>
@@ -1295,6 +1538,15 @@ export default function ProductsPage() {
                                   disabled={formLoading}
                               >
                                   取消
+                              </Button>
+                              <Button
+                                  type="button"
+                                  onClick={handleAutoTranslate}
+                                  disabled={translating || formLoading}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  size="sm"
+                              >
+                                  {translating ? '翻译中...' : '🌐 自动翻译为英文'}
                               </Button>
                               <Button type="submit" disabled={formLoading}>
                                   {formLoading ? '创建中...' : '创建'}
@@ -1318,106 +1570,50 @@ export default function ProductsPage() {
 
           {/* 产品表格 */}
           <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                      <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              产品
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              SKU / 分类
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              价格
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              库存
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              状态
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              操作
-                          </th>
-                      </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                      {products.map((product) => (
-                          <tr key={product.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                      {product.featuredImage && (
-                                          <img
-                                              src={product.featuredImage}
-                                              alt={product.name}
-                                              className="w-10 h-10 rounded-md object-cover mr-3"
-                                          />
-                                      )}
-                                      <div>
-                                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                          <div className="text-sm text-gray-500">{product.slug}</div>
-                                      </div>
-                                  </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{product.sku}</div>
-                                  <div className="text-sm text-gray-500">{product.category?.name || '-'}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">¥{product.price}</div>
-                                  {product.salePrice && (
-                                      <div className="text-sm text-red-600">¥{product.salePrice}</div>
-                                  )}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                  <span
-                                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                          product.status === 'ACTIVE'
-                                              ? 'bg-green-100 text-green-800'
-                                              : product.status === 'INACTIVE'
-                                              ? 'bg-gray-100 text-gray-800'
-                                              : 'bg-red-100 text-red-800'
-                                      }`}
-                                  >
-                                      {product.status === 'ACTIVE'
-                                          ? '正常'
-                                          : product.status === 'INACTIVE'
-                                          ? '下架'
-                                          : '缺货'}
-                                  </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                  <button
-                                      onClick={() => handleViewProduct(product.slug)}
-                                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                      title="在新标签页中查看前台详情页"
-                                  >
-                                      查看
-                                  </button>
-                                  <button
-                                      onClick={() => openEditDialog(product)}
-                                      className="text-blue-600 hover:text-blue-900 mr-4"
-                                  >
-                                      编辑
-                                  </button>
-                                  <button
-                                      onClick={() => handleCopyProduct(product)}
-                                      className="text-green-600 hover:text-green-900 mr-4"
-                                  >
-                                      复制
-                                  </button>
-                                  <button
-                                      onClick={() => openDeleteDialog(product)}
-                                      className="text-red-600 hover:text-red-900"
-                                  >
-                                      删除
-                                  </button>
-                              </td>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                          <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  排序
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  产品
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  分类
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  价格
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  库存
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  状态
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  操作
+                              </th>
                           </tr>
-                      ))}
-                  </tbody>
-              </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                          <SortableContext items={products.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                              {products.map((product) => (
+                                  <SortableProductRow
+                                      key={product.id}
+                                      product={product}
+                                      locale={locale}
+                                      onView={handleViewProduct}
+                                      onEdit={openEditDialog}
+                                      onCopy={handleCopyProduct}
+                                      onDelete={openDeleteDialog}
+                                  />
+                              ))}
+                          </SortableContext>
+                      </tbody>
+                  </table>
+              </DndContext>
           </div>
 
           {/* 分页 */}
@@ -1452,19 +1648,6 @@ export default function ProductsPage() {
                   </DialogHeader>
                   <form onSubmit={handleEditProduct} className="flex flex-col flex-1 overflow-hidden">
                       <div className="space-y-6 py-4 px-6 overflow-y-auto flex-1">
-                          {/* 翻译按钮 */}
-                          <div className="flex justify-end">
-                              <Button
-                                  type="button"
-                                  onClick={handleAutoTranslate}
-                                  disabled={translating || formLoading}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                  size="sm"
-                              >
-                                  {translating ? '翻译中...' : '🌐 自动翻译为英文'}
-                              </Button>
-                          </div>
-
                           {/* 基本信息 */}
                           <div className="space-y-4">
                               <h3 className="text-lg font-medium">基本信息</h3>
@@ -1477,14 +1660,7 @@ export default function ProductsPage() {
                                       <Input
                                           id="edit-name"
                                           value={formData.name}
-                                          onChange={(e) => {
-                                              const name = e.target.value;
-                                              setFormData({
-                                                  ...formData,
-                                                  name,
-                                                  slug: generateSlug(name),
-                                              });
-                                          }}
+                                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                           required
                                           className={formErrors.name ? 'border-red-500' : ''}
                                       />
@@ -1504,49 +1680,20 @@ export default function ProductsPage() {
                               </div>
 
                               <div className="space-y-2">
-                                  <Label htmlFor="edit-slug">
-                                      Slug <span className="text-red-600">*</span>
-                                  </Label>
-                                  <Input
-                                      id="edit-slug"
-                                      value={formData.slug}
-                                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                      required
-                                      className={formErrors.slug ? 'border-red-500' : ''}
-                                  />
-                                  {formErrors.slug && <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>}
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-2">
-                                      <Label htmlFor="edit-sku">
-                                          SKU <span className="text-red-600">*</span>
-                                      </Label>
-                                      <Input
-                                          id="edit-sku"
-                                          value={formData.sku}
-                                          onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                          required
-                                          className={formErrors.sku ? 'border-red-500' : ''}
-                                      />
-                                      {formErrors.sku && <p className="text-red-500 text-sm mt-1">{formErrors.sku}</p>}
-                                  </div>
-                                  <div className="space-y-2">
-                                      <Label htmlFor="edit-category">分类</Label>
-                                      <select
-                                          id="edit-category"
-                                          value={formData.categoryId}
-                                          onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                          className="w-full border border-gray-300 rounded-md px-3 py-2"
-                                      >
-                                          <option value="">无分类</option>
-                                          {categories.map((cat) => (
-                                              <option key={cat.id} value={cat.id}>
-                                                  {cat.name}
-                                              </option>
-                                          ))}
-                                      </select>
-                                  </div>
+                                  <Label htmlFor="edit-category">分类</Label>
+                                  <select
+                                      id="edit-category"
+                                      value={formData.categoryId}
+                                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                                  >
+                                      <option value="">无分类</option>
+                                      {categories.map((cat) => (
+                                          <option key={cat.id} value={cat.id}>
+                                              {cat.name}
+                                          </option>
+                                      ))}
+                                  </select>
                               </div>
 
                               <div className="space-y-2">
@@ -1571,7 +1718,7 @@ export default function ProductsPage() {
                                   />
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
+                              {/* <div className="grid grid-cols-2 gap-4">
                                   <div className="space-y-2">
                                       <Label htmlFor="edit-tag">产品标签 (中文)</Label>
                                       <Input
@@ -1625,7 +1772,7 @@ export default function ProductsPage() {
                                       onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
                                       placeholder="5.0"
                                   />
-                              </div>
+                              </div> */}
                           </div>
 
                           {/* 详细描述 */}
@@ -1770,42 +1917,26 @@ export default function ProductsPage() {
                                   </Button>
                               </div>
 
-                              {formData.specifications.map((spec, index) => (
-                                  <div key={index} className="border rounded-lg p-4 space-y-2">
-                                      <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">规格 {index + 1}</span>
-                                          <button
-                                              type="button"
-                                              onClick={() => removeSpecification(index)}
-                                              className="text-red-600 hover:text-red-800 text-sm"
-                                          >
-                                              删除
-                                          </button>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-2">
-                                          <Input
-                                              placeholder="规格名 (中文)"
-                                              value={spec.name}
-                                              onChange={(e) => updateSpecification(index, 'name', e.target.value)}
+                              <DndContext
+                                  sensors={sensors}
+                                  collisionDetection={closestCenter}
+                                  onDragEnd={handleSpecificationDragEnd}
+                              >
+                                  <SortableContext
+                                      items={formData.specifications.map((_, i) => `spec-${i}`)}
+                                      strategy={verticalListSortingStrategy}
+                                  >
+                                      {formData.specifications.map((spec, index) => (
+                                          <SortableSpecificationItem
+                                              key={`spec-${index}`}
+                                              spec={spec}
+                                              index={index}
+                                              onUpdate={updateSpecification}
+                                              onRemove={removeSpecification}
                                           />
-                                          <Input
-                                              placeholder="规格名 (英文)"
-                                              value={spec.nameEn || ''}
-                                              onChange={(e) => updateSpecification(index, 'nameEn', e.target.value)}
-                                          />
-                                          <Input
-                                              placeholder="规格值 (中文)"
-                                              value={spec.value}
-                                              onChange={(e) => updateSpecification(index, 'value', e.target.value)}
-                                          />
-                                          <Input
-                                              placeholder="规格值 (英文)"
-                                              value={spec.valueEn || ''}
-                                              onChange={(e) => updateSpecification(index, 'valueEn', e.target.value)}
-                                          />
-                                      </div>
-                                  </div>
-                              ))}
+                                      ))}
+                                  </SortableContext>
+                              </DndContext>
                           </div>
 
                           {/* 产品特性 */}
@@ -1817,51 +1948,26 @@ export default function ProductsPage() {
                                   </Button>
                               </div>
 
-                              {formData.features.map((feature, index) => (
-                                  <div key={index} className="border rounded-lg p-4 space-y-2">
-                                      <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">特性 {index + 1}</span>
-                                          <button
-                                              type="button"
-                                              onClick={() => removeFeature(index)}
-                                              className="text-red-600 hover:text-red-800 text-sm"
-                                          >
-                                              删除
-                                          </button>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-2">
-                                          <Input
-                                              placeholder="特性标题 (中文)"
-                                              value={feature.title}
-                                              onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                              <DndContext
+                                  sensors={sensors}
+                                  collisionDetection={closestCenter}
+                                  onDragEnd={handleFeatureDragEnd}
+                              >
+                                  <SortableContext
+                                      items={formData.features.map((_, i) => `feature-${i}`)}
+                                      strategy={verticalListSortingStrategy}
+                                  >
+                                      {formData.features.map((feature, index) => (
+                                          <SortableFeatureItem
+                                              key={`feature-${index}`}
+                                              feature={feature}
+                                              index={index}
+                                              onUpdate={updateFeature}
+                                              onRemove={removeFeature}
                                           />
-                                          <Input
-                                              placeholder="特性标题 (英文)"
-                                              value={feature.titleEn || ''}
-                                              onChange={(e) => updateFeature(index, 'titleEn', e.target.value)}
-                                          />
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-2">
-                                          <textarea
-                                              placeholder="特性描述 (中文)"
-                                              value={feature.description}
-                                              onChange={(e) => updateFeature(index, 'description', e.target.value)}
-                                              className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                                          />
-                                          <textarea
-                                              placeholder="特性描述 (英文)"
-                                              value={feature.descriptionEn || ''}
-                                              onChange={(e) => updateFeature(index, 'descriptionEn', e.target.value)}
-                                              className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[60px]"
-                                          />
-                                      </div>
-                                      <Input
-                                          placeholder="图标 (可选)"
-                                          value={feature.icon || ''}
-                                          onChange={(e) => updateFeature(index, 'icon', e.target.value)}
-                                      />
-                                  </div>
-                              ))}
+                                      ))}
+                                  </SortableContext>
+                              </DndContext>
                           </div>
                       </div>
                       <DialogFooter>
@@ -1876,6 +1982,15 @@ export default function ProductsPage() {
                               disabled={formLoading}
                           >
                               取消
+                          </Button>{' '}
+                          <Button
+                              type="button"
+                              onClick={handleAutoTranslate}
+                              disabled={translating || formLoading}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              size="sm"
+                          >
+                              {translating ? '翻译中...' : '🌐 自动翻译为英文'}
                           </Button>
                           <Button type="submit" disabled={formLoading}>
                               {formLoading ? '更新中...' : '更新'}
@@ -1887,7 +2002,7 @@ export default function ProductsPage() {
 
           {/* 删除确认对话框 */}
           <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-              <DialogContent>
+              <DialogContent className="max-w-1xl">
                   <DialogHeader>
                       <DialogTitle>确认删除</DialogTitle>
                       <DialogDescription>

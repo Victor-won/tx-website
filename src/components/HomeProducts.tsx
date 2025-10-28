@@ -11,7 +11,6 @@ interface Product {
   id: string;
   name: string;
   nameEn: string | null;
-  slug: string;
   description: string;
   descriptionEn: string | null;
   tag: string | null;
@@ -119,7 +118,6 @@ function ProductCard({
     features: Array<{ title: string; titleEn?: string; description: string; descriptionEn?: string; icon?: string }> | null;
     featuredImage: string | null;
     stock: number;
-    slug: string;
   };
   index: number;
 }) {
@@ -143,7 +141,7 @@ function ProductCard({
       className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-gray-100/50 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => window.location.href = `/${locale}/products/${product.slug}`}
+      onClick={() => window.location.href = `/${locale}/products/${product.id}`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* 图片区域 */}
@@ -200,7 +198,7 @@ function ProductCard({
               className="flex-1 backdrop-blur-md text-xs"
               onClick={(e) => {
                 e.stopPropagation();
-                window.location.href = `/${locale}/products/${product.slug}`;
+                window.location.href = `/${locale}/products/${product.id}`;
               }}
             >
               {locale === "zh" ? "快速查看" : "Quick View"}
@@ -284,7 +282,7 @@ function ProductCard({
           className="p-0 h-auto text-xs font-semibold group/link"
           onClick={(e) => e.stopPropagation()}
         >
-          <a href={`/${locale}/products/${product.slug}`} className="inline-flex items-center gap-1">
+          <a href={`/${locale}/products/${product.id}`} className="inline-flex items-center gap-1">
             {locale === "zh" ? "查看详情" : "View Details"}
             <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-1 transition-transform" />
           </a>

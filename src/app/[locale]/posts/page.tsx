@@ -7,7 +7,7 @@ interface Post {
   id: string;
   title: string;
   titleEn?: string;
-  slug: string;
+
   excerpt?: string;
   excerptEn?: string;
   featuredImage?: string;
@@ -16,7 +16,7 @@ interface Post {
     id: string;
     name: string;
     nameEn?: string;
-    slug: string;
+
   };
   author: {
     name?: string;
@@ -80,7 +80,7 @@ function PostCard({ post, locale }: { post: Post; locale: string }) {
   return (
     <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       {post.featuredImage && (
-        <Link href={`/${locale}/posts/${post.slug}`}>
+        <Link href={`/${locale}/posts/${post.id}`}>
           <img
             src={post.featuredImage}
             alt={title}
@@ -99,7 +99,7 @@ function PostCard({ post, locale }: { post: Post; locale: string }) {
         )}
         <h2 className="text-xl font-bold mt-2 mb-2">
           <Link
-            href={`/${locale}/posts/${post.slug}`}
+            href={`/${locale}/posts/${post.id}`}
             className="hover:text-blue-600 transition-colors"
           >
             {title}
@@ -252,8 +252,8 @@ export default async function PostsPage({
               {currentCategory
                 ? (locale === "en" ? currentCategory.nameEn : currentCategory.name)
                 : locale === "zh"
-                  ? "文章列表"
-                  : "Articles"}
+                  ? "资讯"
+                  : "Information"}
             </h1>
             {currentCategory?.description && (
               <p className="text-gray-600">{ locale === 'en' ? currentCategory.descriptionEn : currentCategory.description}</p>

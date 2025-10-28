@@ -15,7 +15,6 @@ interface Product {
   id: string;
   name: string;
   nameEn: string | null;
-  slug: string;
   description: string;
   descriptionEn: string | null;
   shortDesc: string | null;
@@ -27,7 +26,6 @@ interface Product {
   priceDisplay: string | null;
   priceDisplayEn: string | null;
   rating: number | null;
-  sku: string;
   stock: number;
   specifications: Array<{ name: string; nameEn?: string; value: string; valueEn?: string }> | null;
   features: Array<{ title: string; titleEn?: string; description: string; descriptionEn?: string; icon?: string }> | null;
@@ -43,7 +41,7 @@ interface Product {
 export default function ProductDetailPage() {
   const locale = useLocale();
   const params = useParams();
-  const slug = params.slug as string;
+  const id = params.id as string;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,15 +51,15 @@ export default function ProductDetailPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (slug) {
+    if (id) {
       fetchProduct();
     }
-  }, [slug]);
+  }, [id]);
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/products/slug/${slug}`);
+      const response = await fetch(`/api/products/${id}`);
       const data = await response.json();
 
       if (data.success && data.data) {
@@ -286,9 +284,6 @@ export default function ProductDetailPage() {
                     </>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  SKU: {product.sku}
-                </p>
               </div>
 
               <Separator />
@@ -452,7 +447,7 @@ export default function ProductDetailPage() {
                   return (
                     <Link
                       key={relatedProduct.id}
-                      href={`/${locale}/products/${relatedProduct.slug}`}
+                      href={`/${locale}/products/${relatedProduct.id}`}
                       className="group"
                     >
                       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
