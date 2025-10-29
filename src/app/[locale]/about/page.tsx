@@ -142,7 +142,7 @@ export default function AboutPage() {
                           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                               {locale === 'zh'
                                   ? '专注融合通信领域十余年，我们始终坚持技术创新，为客户创造价值'
-                                  : 'Focusing on optical communications for over a decade, we consistently pursue technological innovation to create value for customers'}
+                                  : 'Focusing on the field of integrated communications for more than a decade, we have always adhered to technological innovation to create value for customers.'}
                           </p>
                       </div>
 
@@ -153,14 +153,14 @@ export default function AboutPage() {
                                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                                           <Target className="w-6 h-6 text-primary" />
                                       </div>
-                                      <CardTitle>{locale === 'zh' ? '我们的使命' : 'Our Mission'}</CardTitle>
+                                      <CardTitle>{locale === 'zh' ? '定位目标' : 'Our Mission'}</CardTitle>
                                   </div>
                               </CardHeader>
                               <CardContent>
                                   <p className="text-gray-600 leading-relaxed">
                                       {locale === 'zh'
-                                          ? '通过持续的技术创新和优质的产品服务，为全球客户提供领先的融合通信解决方案，推动信息技术发展，助力数字经济腾飞。'
-                                          : 'Through continuous technological innovation and quality products and services, we provide leading optical communication solutions to global customers, driving information technology development and facilitating the rise of the digital economy.'}
+                                          ? '专注语音技术与融合通信解决方案的服务商，为全球客户对接高性价比的国内语音设备、通信集成服务，从需求匹配到落地支持，提供灵活高效的定制化服务。'
+                                          : 'A service provider focusing on voice technology and integrated communication solutions, connecting global customers with cost-effective domestic voice equipment and communication integration services, providing flexible and efficient customized services from demand matching to implementation support.'}
                                   </p>
                               </CardContent>
                           </Card>
@@ -171,14 +171,86 @@ export default function AboutPage() {
                                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                                           <Building2 className="w-6 h-6 text-primary" />
                                       </div>
-                                      <CardTitle>{locale === 'zh' ? '我们的愿景' : 'Our Vision'}</CardTitle>
+                                      <CardTitle>{locale === 'zh' ? '经验丰富' : 'Rich Experience'}</CardTitle>
                                   </div>
                               </CardHeader>
                               <CardContent>
                                   <p className="text-gray-600 leading-relaxed">
                                       {locale === 'zh'
-                                          ? '成为全球领先的融合通信设备供应商，以卓越的技术和服务赢得客户信赖，为构建全球信息高速公路贡献力量。'
-                                          : 'To become a globally leading optical communication equipment supplier, earning customer trust through excellent technology and service, contributing to building the global information superhighway.'}
+                                          ? '深耕语音通信领域10年，熟悉国内供应链资源，曾为海外众多企业、通信服务商提供过设备对接与技术支持，对语音网关、融合通信系统等产品的选型、价格优化有丰富经验。'
+                                          : 'With a decade of experience in the voice communication field, familiar with domestic supply chain resources, having provided equipment docking and technical support for many overseas enterprises and communication service providers, with rich experience in the selection and price optimization of voice gateways and integrated communication systems.'}
+                                  </p>
+                              </CardContent>
+                          </Card>
+
+                          <Card className="border-2 hover:border-primary/50 transition-colors duration-300">
+                              <CardHeader>
+                                  <div className="flex items-center gap-3">
+                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                          <Building2 className="w-6 h-6 text-primary" />
+                                      </div>
+                                      <CardTitle>{locale === 'zh' ? '资源优势' : 'Resource Advantages'}</CardTitle>
+                                  </div>
+                              </CardHeader>
+                              <CardContent>
+                                  <p className="text-gray-600 leading-relaxed">
+                                      {locale === 'zh'
+                                          ? '国内源头工厂，跳过中间环节，帮你拿到更具价格竞争力的语音设备（如 IP 电话、语音交换机、电话录音设备、融合通信平台等）。'
+                                          : 'Domestic source factories, bypassing intermediaries, helping you get more competitively priced voice equipment (such as IP phones, voice switches, telephone recording equipment, integrated communication platforms, etc.).'}
+                                  </p>
+                              </CardContent>
+                          </Card>
+
+                          <Card className="border-2 hover:border-primary/50 transition-colors duration-300">
+                              <CardHeader>
+                                  <div className="flex items-center gap-3">
+                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                          <Building2 className="w-6 h-6 text-primary" />
+                                      </div>
+                                      <CardTitle>{locale === 'zh' ? '服务灵活' : 'Flexible Service'}</CardTitle>
+                                  </div>
+                              </CardHeader>
+                              <CardContent>
+                                  <p className="text-gray-600 leading-relaxed">
+                                      {locale === 'zh'
+                                          ? '个人化对接，响应更快，可根据你的需求（如预算、功能、批量）定制匹配方案，小批量采购也能支持。'
+                                          : 'Personalized docking, faster response, customized matching solutions according to your needs (such as budget, functions, batch), and support for small batch procurement.'}
+                                  </p>
+                              </CardContent>
+                          </Card>
+
+                          <Card className="border-2 hover:border-primary/50 transition-colors duration-300">
+                              <CardHeader>
+                                  <div className="flex items-center gap-3">
+                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                          <Building2 className="w-6 h-6 text-primary" />
+                                      </div>
+                                      <CardTitle>{locale === 'zh' ? '专业支持' : 'Professional Support'}</CardTitle>
+                                  </div>
+                              </CardHeader>
+                              <CardContent>
+                                  <p className="text-gray-600 leading-relaxed">
+                                      {locale === 'zh'
+                                          ? '不仅提供产品，还能协助解决基础的技术适配问题（如设备调试、通信协议对接建议），降低你的落地成本。'
+                                          : 'Not only providing products, but also assisting in solving basic technical adaptation issues (such as device debugging, communication protocol docking suggestions), reducing your implementation costs.'}
+                                  </p>
+                              </CardContent>
+                          </Card>
+
+                          <Card className="border-2 hover:border-primary/50 transition-colors duration-300">
+                              <CardHeader>
+                                  <div className="flex items-center gap-3">
+                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                          <Building2 className="w-6 h-6 text-primary" />
+                                      </div>
+                                      <CardTitle>{locale === 'zh' ? '服务理念' : 'Service Philosophy'}</CardTitle>
+                                  </div>
+                              </CardHeader>
+                              <CardContent>
+                                  <p className="text-gray-600 leading-relaxed">
+                                      {locale === 'zh'
+                                          ? '以‘精准匹配 + 透明服务’为原则，不赚信息差，只做国内外通信需求的‘桥梁’—— 帮你找到合适的产品，降低采购成本，让技术落地更简单。'
+                                          : 'Based on the principle of "accurate matching + transparent service", we do not make information gaps, and only serve as a "bridge" for domestic and foreign communication needs -helping you find the right products, reduce procurement costs, and make technology implementation easier.'}
                                   </p>
                               </CardContent>
                           </Card>

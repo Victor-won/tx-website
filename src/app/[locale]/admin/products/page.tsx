@@ -1460,7 +1460,7 @@ export default function ProductsPage() {
                                                   </button>
                                               </div>
                                           ))}
-                                          <ImageUpload value="" onChange={(url) => addImage(url)} />
+                                          <ImageUpload value="" onChange={(url) => addImage(url)} clearAfterUpload={true} />
                                       </div>
                                   </div>
                               </div>
@@ -1903,7 +1903,7 @@ export default function ProductsPage() {
                                               </button>
                                           </div>
                                       ))}
-                                      <ImageUpload value="" onChange={(url) => addImage(url)} />
+                                      <ImageUpload value="" onChange={(url) => addImage(url)} clearAfterUpload={true} />
                                   </div>
                               </div>
                           </div>

@@ -52,7 +52,7 @@ export default function HomeProducts() {
         {Array.from({ length: 6 }).map((_, index) => (
           <div key={index} className="animate-pulse">
             <Card className="overflow-hidden">
-              <div className="h-64 bg-gray-200" />
+              <div className="w-full aspect-square bg-gray-200" />
               <CardHeader>
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                 <div className="h-3 bg-gray-200 rounded w-full" />
@@ -145,7 +145,7 @@ function ProductCard({
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* 图片区域 */}
-      <div className="relative h-64 overflow-hidden">
+      <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
         {/* 加载状态指示器 */}
         {!isLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 animate-pulse flex items-center justify-center">

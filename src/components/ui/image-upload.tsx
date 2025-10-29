@@ -7,9 +7,10 @@ interface ImageUploadProps {
   value?: string;
   onChange: (url: string) => void;
   className?: string;
+  clearAfterUpload?: boolean; // 上传成功后是否清空预览(用于图片库场景)
 }
 
-export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, className, clearAfterUpload = false }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +62,13 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
 
       if (data.success) {
         onChange(data.data.url);
-        setPreview(data.data.url);
+        if (clearAfterUpload) {
+          // 图片库模式:清空预览,保持上传按钮显示
+          setPreview("");
+        } else {
+          // 单图模式:显示预览
+          setPreview(data.data.url);
+        }
       } else {
         alert(data.error || "上传失败");
         setPreview(value || "");

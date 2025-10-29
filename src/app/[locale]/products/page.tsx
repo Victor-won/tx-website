@@ -14,7 +14,7 @@ interface Product {
   id: string;
   name: string;
   nameEn: string | null;
-  
+
   description: string;
   descriptionEn: string | null;
   shortDesc: string | null;
@@ -203,7 +203,7 @@ export default function ProductsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {Array.from({ length: 9 }).map((_, index) => (
                     <Card key={index} className="overflow-hidden animate-pulse">
-                      <div className="h-64 bg-gray-200" />
+                      <div className="w-full aspect-square bg-gray-200" />
                       <CardHeader>
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                         <div className="h-3 bg-gray-200 rounded w-full" />
@@ -318,7 +318,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* 图片区域 */}
-      <div className="relative h-64 overflow-hidden">
+      <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
         {!isLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 animate-pulse flex items-center justify-center">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>

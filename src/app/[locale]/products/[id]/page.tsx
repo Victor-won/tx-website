@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
     return (
       <SiteLayout>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-8" />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -119,7 +119,7 @@ export default function ProductDetailPage() {
     return (
       <SiteLayout>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Card className="p-12">
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">
@@ -191,7 +191,7 @@ export default function ProductDetailPage() {
             <div className="space-y-4">
               {/* 主图 */}
               <Card className="overflow-hidden group/image cursor-zoom-in" onClick={() => setIsImageZoomed(true)}>
-                <div className="relative h-96 lg:h-[500px] bg-gray-100">
+                <div className="relative w-full aspect-square bg-gray-100">
                   <img
                     src={selectedImage}
                     alt={name}
@@ -213,12 +213,12 @@ export default function ProductDetailPage() {
 
               {/* 缩略图 */}
               {allImages.length > 1 && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   {allImages.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(image)}
-                      className={`relative h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 w-24 ${
                         selectedImage === image
                           ? "border-primary"
                           : "border-gray-200 hover:border-gray-300"
@@ -289,48 +289,6 @@ export default function ProductDetailPage() {
               <Separator />
 
               {/* 数量选择和购买按钮 */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <label className="text-sm font-medium">
-                    {locale === "zh" ? "数量" : "Quantity"}:
-                  </label>
-                  <div className="flex items-center border rounded-lg">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      disabled={!inStock}
-                    >
-                      -
-                    </Button>
-                    <span className="px-4 py-2 min-w-[60px] text-center">{quantity}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                      disabled={!inStock}
-                    >
-                      +
-                    </Button>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {locale === "zh" ? `库存: ${product.stock}` : `Stock: ${product.stock}`}
-                  </span>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button size="lg" className="flex-1" disabled={!inStock}>
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    {locale === "zh" ? "加入购物车" : "Add to Cart"}
-                  </Button>
-                  <Button size="lg" variant="outline">
-                    <Heart className="w-5 h-5" />
-                  </Button>
-                  <Button size="lg" variant="outline">
-                    <Share2 className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
 
               {/* 服务承诺 */}
               <Card className="bg-gray-50 border-0">
@@ -525,27 +483,29 @@ export default function ProductDetailPage() {
           </div>
           {/* 缩略图导航 */}
           {allImages.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm p-2 rounded-lg">
-              {allImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedImage(image);
-                  }}
-                  className={`relative h-16 w-16 rounded overflow-hidden border-2 transition-all ${
-                    selectedImage === image
-                      ? "border-white scale-110"
-                      : "border-white/30 hover:border-white/60"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`${name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90vw] overflow-x-auto bg-black/50 backdrop-blur-sm p-2 rounded-lg scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
+              <div className="flex gap-2">
+                {allImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(image);
+                    }}
+                    className={`relative h-16 w-16 rounded overflow-hidden border-2 transition-all flex-shrink-0 ${
+                      selectedImage === image
+                        ? "border-white scale-110"
+                        : "border-white/30 hover:border-white/60"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

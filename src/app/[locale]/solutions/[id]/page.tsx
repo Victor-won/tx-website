@@ -24,8 +24,8 @@ import {
 } from "lucide-react";
 
 interface Feature {
-  title: string;
-  titleEn?: string;
+  text: string;
+  textEn?: string;
   description: string;
   descriptionEn?: string;
 }
@@ -207,23 +207,15 @@ export default function SolutionDetailPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {solution.features.map((feature, index) => {
-                    const featureTitle =
-                      locale === "en" && feature.titleEn ? feature.titleEn : feature.title;
-                    const featureDesc =
-                      locale === "en" && feature.descriptionEn
-                        ? feature.descriptionEn
-                        : feature.description;
+                    const featureTitle = locale === 'en' && feature.textEn ? feature.textEn : feature.text;
 
                     return (
                       <div key={index} className="flex gap-4 p-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                         <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${solution.iconBg} flex items-center justify-center`}>
                           <Check className="w-6 h-6 text-white" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                            {featureTitle}
-                          </h3>
-                          <p className="text-gray-600 leading-relaxed">{featureDesc}</p>
+                        <div className="font-semibold text-lg text-gray-900 flex items-center">
+                          {featureTitle}
                         </div>
                       </div>
                     );
