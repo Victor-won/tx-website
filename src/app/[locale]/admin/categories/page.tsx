@@ -229,11 +229,11 @@ export default function CategoriesPage() {
     try {
       const payload = {
         name: formData.name,
-        nameEn: formData.nameEn || undefined,
+        nameEn: formData.nameEn || "",
         slug: formData.slug,
-        description: formData.description || undefined,
-        descriptionEn: formData.descriptionEn || undefined,
-        image: formData.image || undefined,
+        description: formData.description || "",
+        descriptionEn: formData.descriptionEn || "",
+        image: formData.image || "",
         parentId: formData.parentId || null,
       };
 
