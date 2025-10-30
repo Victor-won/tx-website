@@ -26,8 +26,8 @@ model Category {
   name        String
   nameEn      String?
   slug        String     @unique
-  description String?
-  descriptionEn String?
+  description String?    @db.Text
+  descriptionEn String?  @db.Text
   image       String?
   parentId    String?
   parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
