@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { pinyin } from "pinyin-pro";
 
 export const dynamic = "force-dynamic";
 
@@ -320,10 +321,33 @@ export default function CategoriesPage() {
   };
 
   const generateSlug = (name: string) => {
+    // 检测是否包含中文字符
+    const hasChinese = /[\u4e00-\u9fa5]/.test(name);
+
+    if (hasChinese) {
+      // 将中文转换为拼音
+      const pinyinText = pinyin(name, {
+        toneType: 'none', // 不带声调
+        type: 'array', // 返回数组
+      }).join('');
+
+      return pinyinText
+        .toLowerCase()
+        .replace(/\s+/g, '-') // 空格替换为连字符
+        .replace(/[^\w\-]+/g, '') // 移除特殊字符
+        .replace(/\-\-+/g, '-') // 多个连字符替换为单个
+        .replace(/^-+/, '') // 移除开头的连字符
+        .replace(/-+$/, ''); // 移除结尾的连字符
+    }
+
+    // 英文或其他字符的处理
     return name
       .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w\-\u4e00-\u9fa5]+/g, "");
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-\-+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
   };
 
   if (loading) {

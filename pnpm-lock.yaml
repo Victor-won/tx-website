@@ -80,6 +80,9 @@ importers:
       next-intl:
         specifier: ^4.3.9
         version: 4.3.9(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.9.2)
+      pinyin-pro:
+        specifier: ^3.27.0
+        version: 3.27.0
       prisma:
         specifier: ^6.1.0
         version: 6.16.2(typescript@5.9.2)
@@ -2205,6 +2208,9 @@ packages:
   pify@2.3.0:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
+
+  pinyin-pro@3.27.0:
+    resolution: {integrity: sha512-Osdgjwe7Rm17N2paDMM47yW+jUIUH3+0RGo8QP39ZTLpTaJVDK0T58hOLaMQJbcMmAebVuK2ePunTEVEx1clNQ==}
 
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
@@ -5011,6 +5017,8 @@ snapshots:
   picomatch@2.3.1: {}
 
   pify@2.3.0: {}
+
+  pinyin-pro@3.27.0: {}
 
   pirates@4.0.7: {}
 
