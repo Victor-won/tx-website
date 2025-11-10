@@ -47,6 +47,7 @@ export default function AdminSolutionsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Solution>>({});
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     fetchSolutions();
@@ -132,6 +133,92 @@ export default function AdminSolutionsPage() {
     setFormData({});
   };
 
+  const handleAutoTranslate = async () => {
+    setTranslating(true);
+    try {
+      const promises = [];
+
+      // 翻译标题
+      if (formData.title && !formData.titleEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: formData.title, targetLang: "en" }),
+          }).then((res) => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      // 翻译描述
+      if (formData.description && !formData.descriptionEn) {
+        promises.push(
+          fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: formData.description,
+              targetLang: "en",
+            }),
+          }).then((res) => res.json())
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      // 翻译特性列表
+      const featurePromises: Promise<any>[] = [];
+      if (formData.features && formData.features.length > 0) {
+        formData.features.forEach((feature) => {
+          const featureObj =
+            typeof feature === "string" ? { text: feature, textEn: "" } : feature;
+          if (featureObj.text && !featureObj.textEn) {
+            featurePromises.push(
+              fetch("/api/translate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  text: featureObj.text,
+                  targetLang: "en",
+                }),
+              }).then((res) => res.json())
+            );
+          } else {
+            featurePromises.push(Promise.resolve(null));
+          }
+        });
+      }
+
+      const [titleResult, descriptionResult] = await Promise.all(promises);
+      const featureResults = await Promise.all(featurePromises);
+
+      // 更新翻译后的特性
+      const translatedFeatures = formData.features?.map((feature, index) => {
+        const featureObj =
+          typeof feature === "string" ? { text: feature, textEn: "" } : feature;
+        const translation = featureResults[index];
+        return {
+          ...featureObj,
+          textEn: translation?.data?.translatedText || featureObj.textEn || "",
+        };
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        titleEn: titleResult?.data?.translatedText || prev.titleEn,
+        descriptionEn:
+          descriptionResult?.data?.translatedText || prev.descriptionEn,
+        features: translatedFeatures || prev.features,
+      }));
+    } catch (error) {
+      console.error("翻译失败:", error);
+      alert(locale === "zh" ? "翻译失败，请重试" : "Translation failed, please try again");
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm(locale === "zh" ? "确定要删除吗？" : "Are you sure?")) {
       return;
@@ -210,6 +297,17 @@ export default function AdminSolutionsPage() {
 
   const renderForm = () => (
     <div className="space-y-4">
+      <div className="flex justify-end mb-2">
+        <Button
+          type="button"
+          onClick={handleAutoTranslate}
+          disabled={translating}
+          className="bg-green-600 hover:bg-green-700 text-white"
+          size="sm"
+        >
+          {translating ? (locale === "zh" ? "翻译中..." : "Translating...") : "🌐 " + (locale === "zh" ? "自动翻译为英文" : "Auto Translate to English")}
+        </Button>
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium">

@@ -8,6 +8,7 @@ export const CategorySchema = z.object({
   description: z.string().optional(),
   descriptionEn: z.string().optional(),
   image: z.string().optional(),
+  model: z.enum(["POST", "PRODUCT"]).default("POST"),
   parentId: z.string().nullable().optional(),
 });
 

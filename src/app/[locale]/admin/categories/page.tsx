@@ -26,10 +26,12 @@ interface Category {
   description: string | null;
   descriptionEn: string | null;
   image: string | null;
+  model: "POST" | "PRODUCT";
   parentId: string | null;
   parent?: {
     id: string;
     name: string;
+    model: "POST" | "PRODUCT";
   } | null;
   children?: Category[];
   _count?: {
@@ -47,6 +49,7 @@ interface CategoryFormData {
   description: string;
   descriptionEn: string;
   image: string;
+  model: "POST" | "PRODUCT";
   parentId: string;
 }
 
@@ -71,6 +74,7 @@ export default function CategoriesPage() {
     description: "",
     descriptionEn: "",
     image: "",
+    model: "POST",
     parentId: "",
   });
   const [formLoading, setFormLoading] = useState(false);
@@ -184,6 +188,7 @@ export default function CategoriesPage() {
         description: formData.description || undefined,
         descriptionEn: formData.descriptionEn || undefined,
         image: formData.image || undefined,
+        model: formData.model,
         parentId: formData.parentId || null,
       };
 
@@ -206,6 +211,7 @@ export default function CategoriesPage() {
           description: "",
           descriptionEn: "",
           image: "",
+          model: "POST",
           parentId: "",
         });
         fetchCategories();
@@ -235,6 +241,7 @@ export default function CategoriesPage() {
         description: formData.description || "",
         descriptionEn: formData.descriptionEn || "",
         image: formData.image || "",
+        model: formData.model,
         parentId: formData.parentId || null,
       };
 
@@ -258,6 +265,7 @@ export default function CategoriesPage() {
           description: "",
           descriptionEn: "",
           image: "",
+          model: "POST",
           parentId: "",
         });
         fetchCategories();
@@ -310,6 +318,7 @@ export default function CategoriesPage() {
       description: category.description || "",
       descriptionEn: category.descriptionEn || "",
       image: category.image || "",
+      model: category.model,
       parentId: category.parentId || "",
     });
     setIsEditDialogOpen(true);
@@ -458,6 +467,26 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="create-model">分类模型 *</Label>
+                  <select
+                    id="create-model"
+                    value={formData.model}
+                    onChange={(e) => {
+                      const newModel = e.target.value as "POST" | "PRODUCT";
+                      setFormData({
+                        ...formData,
+                        model: newModel,
+                        parentId: "" // 切换模型时清空父分类选择
+                      });
+                    }}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    required
+                  >
+                    <option value="POST">文章分类</option>
+                    <option value="PRODUCT">产品分类</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="create-parent">父分类</Label>
                   <select
                     id="create-parent"
@@ -468,11 +497,13 @@ export default function CategoriesPage() {
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="">无 (顶级分类)</option>
-                    {allCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.parent ? `  └─ ${cat.name}` : cat.name}
-                      </option>
-                    ))}
+                    {allCategories
+                      .filter((cat) => cat.model === formData.model)
+                      .map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.parent ? `  └─ ${cat.name}` : cat.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -489,6 +520,7 @@ export default function CategoriesPage() {
                       description: "",
                       descriptionEn: "",
                       image: "",
+                      model: "POST",
                       parentId: "",
                     });
                   }}
@@ -528,6 +560,9 @@ export default function CategoriesPage() {
                 Slug
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                模型
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 父分类
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -564,6 +599,15 @@ export default function CategoriesPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {category.slug}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    category.model === "POST"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-green-100 text-green-800"
+                  }`}>
+                    {category.model === "POST" ? "文章" : "产品"}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {category.parent ? category.parent.name : "-"}
@@ -707,6 +751,26 @@ export default function CategoriesPage() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="edit-model">分类模型 *</Label>
+                <select
+                  id="edit-model"
+                  value={formData.model}
+                  onChange={(e) => {
+                    const newModel = e.target.value as "POST" | "PRODUCT";
+                    setFormData({
+                      ...formData,
+                      model: newModel,
+                      parentId: "" // 切换模型时清空父分类选择
+                    });
+                  }}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  required
+                >
+                  <option value="POST">文章分类</option>
+                  <option value="PRODUCT">产品分类</option>
+                </select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="edit-parent">父分类</Label>
                 <select
                   id="edit-parent"
@@ -718,7 +782,7 @@ export default function CategoriesPage() {
                 >
                   <option value="">无 (顶级分类)</option>
                   {allCategories
-                    .filter((cat) => cat.id !== selectedCategory?.id)
+                    .filter((cat) => cat.id !== selectedCategory?.id && cat.model === formData.model)
                     .map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.parent ? `  └─ ${cat.name}` : cat.name}
@@ -741,6 +805,7 @@ export default function CategoriesPage() {
                     description: "",
                     descriptionEn: "",
                     image: "",
+                    model: "POST",
                     parentId: "",
                   });
                 }}

@@ -409,7 +409,7 @@ export default function ProductDetailPage() {
                       className="group"
                     >
                       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
-                        <div className="relative h-48 overflow-hidden bg-gray-100">
+                        <div className="relative aspect-square overflow-hidden bg-gray-100">
                           <img
                             src={relatedProduct.featuredImage || "/SL-021920-28230-15.jpg"}
                             alt={relatedName}

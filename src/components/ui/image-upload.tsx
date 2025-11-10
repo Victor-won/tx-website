@@ -8,9 +8,10 @@ interface ImageUploadProps {
   onChange: (url: string) => void;
   className?: string;
   clearAfterUpload?: boolean; // 上传成功后是否清空预览(用于图片库场景)
+  multiple?: boolean; // 是否允许多选文件
 }
 
-export function ImageUpload({ value, onChange, className, clearAfterUpload = false }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, className, multiple = false, clearAfterUpload = false }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,7 +30,7 @@ export function ImageUpload({ value, onChange, className, clearAfterUpload = fal
       "image/webp",
     ];
     if (!allowedTypes.includes(file.type)) {
-      alert("仅支持图片格式 (JPEG, PNG, GIF, WebP)");
+      alert("仅支持图片格式1111 (JPEG, PNG, GIF, WebP)");
       return;
     }
 
@@ -95,14 +96,24 @@ export function ImageUpload({ value, onChange, className, clearAfterUpload = fal
 
   return (
     <div className={className}>
-      <input
+      {multiple ? (
+        <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         onChange={handleFileChange}
         className="hidden"
         id={uniqueId}
+        multiple
       />
+      ) : (<input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+        id={uniqueId}
+      />)}
 
       {preview ? (
         <div className="space-y-2">
@@ -155,7 +166,7 @@ export function ImageUpload({ value, onChange, className, clearAfterUpload = fal
                 />
               </svg>
               <div className="text-xs text-gray-500 mt-2">点击上传</div>
-              <div className="text-xs text-gray-400">最大 5MB</div>
+              <div className="text-xs text-gray-400">最大122 5MB</div>
             </div>
           )}
         </label>

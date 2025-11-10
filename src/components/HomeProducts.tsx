@@ -273,41 +273,6 @@ function ProductCard({
           )}
         </div>
       </CardContent>
-
-      <CardFooter className="flex justify-between items-center pt-6 border-t">
-        <Button
-          variant="link"
-          size="sm"
-          asChild
-          className="p-0 h-auto text-xs font-semibold group/link"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <a href={`/${locale}/products/${product.id}`} className="inline-flex items-center gap-1">
-            {locale === "zh" ? "查看详情" : "View Details"}
-            <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-1 transition-transform" />
-          </a>
-        </Button>
-
-        {/* 分享和收藏 */}
-        <div className="flex gap-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Share2 className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 hover:text-red-500"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Heart className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </CardFooter>
     </Card>
   );
 }

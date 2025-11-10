@@ -1437,19 +1437,20 @@ export default function ProductsPage() {
                                       <Label>封面图片</Label>
                                       <ImageUpload
                                           value={formData.featuredImage}
+                                          multiple={false}
                                           onChange={(url) => setFormData({ ...formData, featuredImage: url })}
                                       />
                                   </div>
 
                                   <div className="space-y-2">
                                       <Label>产品图片库</Label>
-                                      <div className="grid grid-cols-4 gap-4">
+                                      <div className="flex flex-wrap gap-4">
                                           {formData.images.map((image, index) => (
                                               <div key={index} className="relative">
                                                   <img
                                                       src={image}
                                                       alt={`产品图片 ${index + 1}`}
-                                                      className="w-full h-32 object-cover rounded border"
+                                                      className="w-32 h-32 object-cover rounded border"
                                                   />
                                                   <button
                                                       type="button"
@@ -1460,7 +1461,7 @@ export default function ProductsPage() {
                                                   </button>
                                               </div>
                                           ))}
-                                          <ImageUpload value="" onChange={(url) => addImage(url)} clearAfterUpload={true} />
+                                          <ImageUpload value="" multiple={true} onChange={(url) => addImage(url)} clearAfterUpload={true} />
                                       </div>
                                   </div>
                               </div>
@@ -1886,13 +1887,13 @@ export default function ProductsPage() {
 
                               <div className="space-y-2">
                                   <Label>产品图片库</Label>
-                                  <div className="grid grid-cols-4 gap-4">
+                                  <div className="flex flex-wrap gap-4">
                                       {formData.images.map((image, index) => (
                                           <div key={index} className="relative">
                                               <img
                                                   src={image}
                                                   alt={`产品图片 ${index + 1}`}
-                                                  className="w-full h-32 object-cover rounded border"
+                                                  className="w-32 h-32 object-cover rounded border"
                                               />
                                               <button
                                                   type="button"
@@ -1903,7 +1904,7 @@ export default function ProductsPage() {
                                               </button>
                                           </div>
                                       ))}
-                                      <ImageUpload value="" onChange={(url) => addImage(url)} clearAfterUpload={true} />
+                                      <ImageUpload value="" multiple={true} onChange={(url) => addImage(url)} clearAfterUpload={true} />
                                   </div>
                               </div>
                           </div>
