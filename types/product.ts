@@ -21,7 +21,7 @@ export const FeatureSchema = z.object({
 export const ProductSchema = z.object({
   name: z.string().min(1, "产品名称不能为空"),
   nameEn: z.string().optional(),
-  slug: z.string().min(1, "Slug不能为空"),
+  slug: z.string().optional(),
   description: z.string().min(1, "产品描述不能为空"),
   descriptionEn: z.string().optional(),
   shortDesc: z.string().optional(),
@@ -35,7 +35,7 @@ export const ProductSchema = z.object({
   features: z.array(FeatureSchema).optional(),
   price: z.number().min(0, "价格不能为负数"),
   salePrice: z.number().min(0, "销售价格不能为负数").optional(),
-  sku: z.string().min(1, "SKU不能为空"),
+  sku: z.string().optional(),
   stock: z.number().min(0, "库存不能为负数").default(0),
   status: z.enum(["ACTIVE", "INACTIVE", "OUT_OF_STOCK"]).default("ACTIVE"),
   featuredImage: z.string().optional(),

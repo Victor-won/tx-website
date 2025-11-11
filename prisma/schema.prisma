@@ -43,7 +43,6 @@ model Post {
   id            String     @id @default(cuid())
   title         String
   titleEn       String?
-  slug          String     @unique
   content       String     @db.Text
   contentEn     String?    @db.Text
   excerpt       String?    @db.Text
@@ -65,7 +64,6 @@ model Product {
   id            String        @id @default(cuid())
   name          String
   nameEn        String?
-  slug          String        @unique
   description   String        @db.Text
   descriptionEn String?       @db.Text
   shortDesc     String?       @db.Text
@@ -79,7 +77,6 @@ model Product {
   features      Json?         // 产品特性数组
   price         Decimal       @db.Decimal(10, 2)
   salePrice     Decimal?      @db.Decimal(10, 2)
-  sku           String        @unique
   stock         Int           @default(0)
   status        ProductStatus @default(ACTIVE)
   featuredImage String?

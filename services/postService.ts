@@ -68,20 +68,6 @@ export class PostService {
     });
   }
 
-  static async getBySlug(slug: string) {
-    return prisma.post.findUnique({
-      where: { slug },
-      include: {
-        author: {
-          select: { id: true, name: true, email: true },
-        },
-        category: true,
-        tags: true,
-        mediaFiles: true,
-      },
-    });
-  }
-
   static async create(data: CreatePost & { authorId: string }) {
     const { tags, ...postData } = data;
 
