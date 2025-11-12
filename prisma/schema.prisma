@@ -79,7 +79,7 @@ model Product {
   features      Json?         // 产品特性数组
   price         Decimal       @db.Decimal(10, 2)
   salePrice     Decimal?      @db.Decimal(10, 2)
-  sku           String        @unique
+  sku           String?       @unique
   stock         Int           @default(0)
   status        ProductStatus @default(ACTIVE)
   featuredImage String?
