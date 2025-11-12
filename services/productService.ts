@@ -1,6 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { CreateProduct, UpdateProduct } from "../types";
-import { Prisma, ProductStatus } from "@prisma/client";
+import { ProductStatus } from "@prisma/client";
 
 export class ProductService {
   static async getAll(params?: {
@@ -75,25 +75,19 @@ export class ProductService {
   }
 
   static async create(data: CreateProduct) {
-    const { tags, categoryId, images, ...productData } = data;
+    const { tags, ...productData } = data;
 
     return prisma.product.create({
       data: {
         ...productData,
-        ...(images && { images: images as Prisma.JsonArray }),
-        ...(categoryId != null
-          ? { category: { connect: { id: categoryId } } }
-          : {}),
-        ...(tags && tags.length > 0
-          ? {
-              tags: {
-                connectOrCreate: tags.map((tag) => ({
-                  where: { slug: tag },
-                  create: { name: tag, slug: tag },
-                })),
-              },
-            }
-          : {}),
+        ...(tags && {
+          tags: {
+            connectOrCreate: tags.map((tag) => ({
+              where: { slug: tag },
+              create: { name: tag, slug: tag },
+            })),
+          },
+        }),
       },
       include: {
         category: true,
@@ -104,18 +98,12 @@ export class ProductService {
   }
 
   static async update(id: string, data: UpdateProduct) {
-    const { tags, categoryId, images, ...productData } = data;
+    const { tags, ...productData } = data;
 
     return prisma.product.update({
       where: { id },
       data: {
         ...productData,
-        ...(images && { images: images as Prisma.JsonArray }),
-        ...(categoryId !== undefined
-          ? categoryId === null
-            ? { category: { disconnect: true } }
-            : { category: { connect: { id: categoryId } } }
-          : {}),
         ...(tags && {
           tags: {
             set: [],
