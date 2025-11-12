@@ -13,6 +13,7 @@ import {
 } from "../../../../components/ui/dialog";
 import { ImageUpload } from "../../../../components/ui/image-upload";
 import { RichTextEditor } from "../../../../components/ui/rich-text-editor";
+import { v4 as uuidv4 } from "uuid";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ interface Post {
   id: string;
   title: string;
   titleEn?: string;
+  slug: string;
   content: string;
   contentEn?: string;
   excerpt?: string;
@@ -51,6 +53,7 @@ interface Category {
 interface FormData {
   title: string;
   titleEn: string;
+  slug: string;
   content: string;
   contentEn: string;
   excerpt: string;
@@ -84,6 +87,7 @@ export default function PostsPage() {
   const [formData, setFormData] = useState<FormData>({
     title: "",
     titleEn: "",
+    slug: uuidv4(),
     content: "",
     contentEn: "",
     excerpt: "",
@@ -279,6 +283,7 @@ export default function PostsPage() {
         body: JSON.stringify({
           title: `${post.title} (副本)`,
           titleEn: post.titleEn ? `${post.titleEn} (Copy)` : "",
+          slug: uuidv4(),
           content: post.content,
           contentEn: post.contentEn || "",
           excerpt: post.excerpt || "",
@@ -320,6 +325,7 @@ export default function PostsPage() {
       featuredImage: post.featuredImage || "",
       status: post.status,
       categoryId: post.categoryId || "",
+      slug: post.slug || uuidv4(),
     });
     setIsEditOpen(true);
   };
@@ -333,6 +339,7 @@ export default function PostsPage() {
     setFormData({
       title: "",
       titleEn: "",
+      slug: uuidv4(),
       content: "",
       contentEn: "",
       excerpt: "",

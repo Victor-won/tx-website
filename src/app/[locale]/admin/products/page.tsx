@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { v4 as uuidv4 } from "uuid";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,7 @@ interface Product {
   shortDescEn: string | null;
   tag: string | null;
   tagEn: string | null;
+  slug: string;
   priceDisplay: string | null;
   priceDisplayEn: string | null;
   rating: number | null;
@@ -85,6 +87,8 @@ interface ProductFormData {
   descriptionEn: string;
   shortDesc: string;
   shortDescEn: string;
+  slug: string;
+  sku: string;
   tag: string;
   tagEn: string;
   priceDisplay: string;
@@ -406,6 +410,8 @@ export default function ProductsPage() {
     shortDescEn: "",
     tag: "",
     tagEn: "",
+    slug: uuidv4(),
+    sku: uuidv4(),
     priceDisplay: "",
     priceDisplayEn: "",
     rating: "",
@@ -1008,6 +1014,8 @@ export default function ProductsPage() {
       const payload = {
         name: `${product.name} (副本)`,
         nameEn: product.nameEn ? `${product.nameEn} (Copy)` : undefined,
+        slug: uuidv4(),
+        sku: uuidv4(),
         description: product.description,
         descriptionEn: product.descriptionEn || undefined,
         shortDesc: product.shortDesc || undefined,
@@ -1065,6 +1073,8 @@ export default function ProductsPage() {
       shortDescEn: product.shortDescEn || "",
       tag: product.tag || "",
       tagEn: product.tagEn || "",
+      slug: product.slug || uuidv4(),
+      sku: product.sku || uuidv4(),
       priceDisplay: product.priceDisplay || "",
       priceDisplayEn: product.priceDisplayEn || "",
       rating: product.rating?.toString() || "",
@@ -1096,6 +1106,8 @@ export default function ProductsPage() {
       shortDescEn: "",
       tag: "",
       tagEn: "",
+      slug: uuidv4(),
+      sku: uuidv4(),
       priceDisplay: "",
       priceDisplayEn: "",
       rating: "",
