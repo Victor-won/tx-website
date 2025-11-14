@@ -54,7 +54,8 @@
       "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npm run build)",
       "Bash(pm2 restart:*)",
       "Bash(DATABASE_URL=\"mysql://root:123123@localhost:3306/tx_website\" npx prisma migrate:*)",
-      "Read(//Users/angck/.npm/_logs/**)"
+      "Read(//Users/angck/.npm/_logs/**)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": []
