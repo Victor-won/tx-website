@@ -1,5 +1,4 @@
 import { getRequestConfig } from "next-intl/server";
-import { headers } from "next/headers";
 
 // 支持的语言列表
 export const locales = ["zh", "en"] as const;
@@ -11,7 +10,6 @@ export const defaultLocale: Locale = "zh";
 export default getRequestConfig(async ({ requestLocale }) => {
   // 从请求中获取 locale，如果没有则使用默认值
   let locale = await requestLocale;
-  const timeZoneHeader = (await headers()).get("x-time-zone") || "Asia/Shanghai";
 
   // 验证并确保使用支持的 locale
   if (!locale || !locales.includes(locale as any)) {
@@ -21,6 +19,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale,
     messages: (await import(`./messages/${locale}.json`)).default,
-    timeZone: timeZoneHeader || "Asia/Shanghai",
+    timeZone: "Asia/Shanghai",
   };
 });
